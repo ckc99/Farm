@@ -1,0 +1,840 @@
+:root {
+  --color-bg: #fcf7ed;
+  --color-ink: #141210;
+  --color-olive: #7b7600;
+  --color-footer: #C9B59C;
+  --color-tan: #d4b491;
+  --color-brown: #987557;
+
+  --font-display: 'Itim', cursive;
+  --font-mono: 'JetBrains Mono', 'Iosevka Charon', ui-monospace, 'Courier New', monospace;
+  --font-script: 'Italianno', cursive;
+
+  --content-max: 1493px;
+  --side-pad: clamp(20px, 8vw, 176px);
+
+  --fs-hero: clamp(2.6rem, 3.4rem + 2vw, 6rem);
+  --fs-hero-sub: clamp(1.9rem, 2.4rem + 1vw, 4.375rem);
+  --fs-h2: clamp(2.4rem, 2.6rem + 2.6vw, 6rem);
+  --fs-body: clamp(1.05rem, 1rem + 0.5vw, 1.2rem);
+  --fs-faq-q: clamp(1rem, 0.9rem + 0.5vw, 1.6rem);
+  --fs-faq-icon: clamp(1.75rem, 1.5rem + 1.5vw, 4rem);
+  --fs-footer-label: clamp(0.9rem, 0.8rem + 0.8vw, 2rem);
+  --fs-footer-value: clamp(0.75rem, 0.7rem + 0.5vw, 1.8rem);
+}
+
+/* ---------------------------------------------------
+   Reset
+--------------------------------------------------- */
+* { box-sizing: border-box; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  margin: 0;
+  background: var(--color-bg);
+  color: var(--color-ink);
+  font-family: var(--font-mono);
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+img { max-width: 100%; display: block; }
+a { color: inherit; }
+h1, h2, p { margin: 0; }
+
+.wrap {
+  max-width: var(--content-max);
+  margin-inline: auto;
+  padding-inline: var(--side-pad);
+}
+
+.section-title {
+  font-family: 'IM Fell DW Pica SC', serif;
+  font-size: var(--fs-h2);
+  font-weight: 400;
+  line-height: 1.1;
+}
+.section-title--center { text-align: center; }
+
+/* ---------------------------------------------------
+   Header
+--------------------------------------------------- */
+.site-header {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 10;
+  padding-block: clamp(10px, 2vw, 20px);
+  pointer-events: none;
+}
+.site-header .logo {
+  pointer-events: auto;
+}
+
+.logo {
+  position: relative;
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* the rope the badge hangs from — fixed, doesn't swing itself */
+.logo__rope {
+  width: 2px;
+  height: clamp(10px, 1.6vw, 18px);
+  background: var(--color-brown);
+  opacity: 0.7;
+}
+
+/* everything below the rope swings as one rigid body, pivoting
+   from the point where it meets the rope */
+.logo__badge {
+  position: relative;
+  display: block;
+  transform-origin: top center;
+  animation: logo-swing 4.5s ease-in-out infinite;
+}
+
+.logo img {
+  width: clamp(70px, 8vw, 125px);
+  height: auto;
+  display: block;
+  transition: opacity 0.3s ease;
+}
+
+/* Brown logo stays in normal flow */
+.brown-logo {
+  opacity: 1;
+  z-index: 1;
+}
+
+/* Yellow logo sits exactly on top */
+.yellow-logo {
+  position: absolute;
+  top: 0;
+  left: 0;
+  opacity: 0;
+  z-index: 2;
+}
+
+/* Hover swap */
+.logo:hover .brown-logo {
+  opacity: 0;
+}
+
+.logo:hover .yellow-logo {
+  opacity: 1;
+}
+
+@keyframes logo-swing {
+  0%, 100% { transform: rotate(0deg); }
+  25%      { transform: rotate(-6deg); }
+  75%      { transform: rotate(6deg); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .logo__badge { animation: none; }
+}
+/* ---------------------------------------------------
+   Intro
+--------------------------------------------------- */
+.intro {
+  position: relative;
+  padding-top: clamp(4rem, 8vw, 7rem);
+  padding-bottom: clamp(1.5rem, 4vw, 3rem);
+  overflow: hidden;
+  /* shorter than promise-bg.png's own ratio (1820:1582); object-fit:
+     cover crops the excess so the section doesn't run so tall */
+  aspect-ratio: 1820 / 1100;
+}
+.intro__bg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: top;
+  opacity: 0.9;
+  pointer-events: none;
+  z-index: 0;
+  /* linear (not radial) so the fade is measured against the box's own
+     edges, not a farthest-corner ellipse — it reaches fully transparent
+     exactly at the bottom edge, right where the wave divider picks up.
+     Fade starts at 30% and eases out gradually over the remaining 70%
+     for a long, smooth transition rather than a late, abrupt one. */
+  mask-image: linear-gradient(to bottom, black 0%, black 30%, transparent 100%);
+  -webkit-mask-image: linear-gradient(to bottom, black 0%, black 30%, transparent 100%);
+}
+
+/* trail of chicken footprints, fading in bottom-to-top on page load,
+   as if it just walked up into view below the paragraph */
+.footprints {
+  position: absolute;
+  top: 100%;
+  right: 50px;
+  margin-top: clamp(0.5rem, 2vw, 1rem);
+  z-index: 1;
+  width: clamp(70px, 9vw, 130px);
+  aspect-ratio: 1 / 1;
+  background-image: url('../assets/footprint.png');
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: bottom left;
+  opacity: 0;
+  pointer-events: none;
+  clip-path: inset(100% 0 0 0);
+  animation: footprints-walk-in 5s ease-in-out 0.5s infinite;
+}
+
+@keyframes footprints-walk-in {
+  0%   { opacity: 0;    clip-path: inset(100% 0 0 0); }
+  20%  { opacity: 0.45; clip-path: inset(0 0 0 0); }
+  80%  { opacity: 0.45; clip-path: inset(0 0 0 0); }
+  100% { opacity: 0;    clip-path: inset(0 0 100% 0); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .footprints {
+    animation: none;
+    opacity: 0.35;
+    clip-path: inset(0 0 0 0);
+  }
+}
+.intro__grid {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  gap: clamp(2.5rem, 6vw, 4.5rem);
+}
+.intro__grid > .intro__copy {
+  display: flex;
+}
+
+/* title */
+.intro__copy {
+  order: 1;
+  flex: 1 1 380px;
+  align-self: center;
+  margin-top: clamp(1.5rem, 5vw, 4rem);
+}
+.intro__title {
+  font-family: 'IM Fell DW Pica SC', serif;
+  font-weight: 400;
+  display: flex;
+  flex-direction: column;
+}
+.intro__title span {
+  font-size: var(--fs-hero);
+  line-height: 1.1;
+}
+.intro__title-sub {
+  font-size: var(--fs-hero-sub) !important;
+}
+
+.intro__row {
+  display: contents;
+}
+
+/* badge + paragraph */
+.intro__badge {
+  order: 3;
+  position: relative;
+  width: clamp(220px, 30vw, 330px);
+  aspect-ratio: 1 / 1;
+  margin-inline: auto;
+  margin-top: clamp(2rem, 6vw, 5rem);
+}
+.intro__badge-text {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  fill: var(--color-ink);
+  font-family: var(--font-script);
+  font-size: 34px;
+  letter-spacing: 2px;
+}
+.intro__badge-chicken {
+  position: absolute;
+  width: 46%;
+  top: 62%;
+  left: 51%;
+  transform: translate(-50%, -50%);
+}
+
+.intro__text {
+  position: relative;
+  order: 4;
+  flex: 1 1 420px;
+  align-self: center;
+  font-family: var(--font-mono);
+  font-size: var(--fs-body);
+  line-height: 1.55;
+  max-width: 45ch;
+}
+
+@media (min-width: 800px) {
+  .intro__grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: auto auto;
+    align-items: center;
+    column-gap: clamp(2rem, 5vw, 5rem);
+  }
+  .intro__copy   { grid-column: 1; grid-row: 1; }
+  .intro__badge  { grid-column: 1; grid-row: 2; margin-inline: 0; }
+  .intro__text   { grid-column: 2; grid-row: 1 / 3; max-width: 46ch; }
+}
+
+/* ---------------------------------------------------
+   Promise
+--------------------------------------------------- */
+.promise {
+  position: relative;
+  height: 260vh;
+  margin-top: clamp(-60px, -4vw, -24px);
+  background-image: url('../assets/DP-22055-001.jpg');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+.promise__divider-wrap {
+  position: absolute;
+  left: 0;
+  width: 100%;
+  height: clamp(70px, 11vw, 160px);
+  z-index: 1;
+  overflow: hidden;
+  pointer-events: none;
+}
+.promise__divider-wrap--top {
+  top: 0;
+}
+.promise__divider-wrap--bottom {
+  bottom: 0;
+  transform: scaleY(-1);
+}
+.promise__divider {
+  display: block;
+  width: 200%;
+  height: 100%;
+  will-change: transform;
+}
+.promise__divider path {
+  fill: var(--color-bg);
+}
+.promise__pin {
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  display: flex;
+  align-items: center;
+  overflow: hidden;
+}
+.promise__scrim {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  background: rgba(20, 18, 16, 0.35);
+  pointer-events: none;
+}
+.promise__bg {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  overflow: hidden;
+  pointer-events: none;
+}
+.promise__bg-img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  object-position: 32% 52%;
+  transform-origin: 50% 50%;
+  will-change: transform;
+  transition: transform 0.2s ease-out, transform-origin 0.2s ease-out;
+}
+.promise__pin .wrap {
+  position: relative;
+  z-index: 2;
+  width: 100%;
+}
+.promise__kicker {
+  position: absolute;
+  left: var(--side-pad);
+  bottom: clamp(1.5rem, 5vw, 3rem);
+  z-index: 2;
+  text-align: left;
+  color: #F7E7D7;
+  font-family: var(--font-mono);
+  font-size: clamp(0.75rem, 0.65rem + 0.4vw, 1rem);
+  font-style: italic;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.8s ease;
+}
+.promise__kicker.is-visible {
+  opacity: 1;
+}
+.promise .section-title {
+  text-align: right;
+  margin-bottom: clamp(2.5rem, 8vw, 5.5rem);
+  color: #F7E7D7;
+  font-family: var(--font-mono);
+  font-size: clamp(0.95rem, 0.85rem + 0.6vw, 1.4rem);
+  font-style: italic;
+  opacity: 0;
+  transition: opacity 0.8s ease;
+}
+.promise .section-title.is-visible {
+  opacity: 1;
+}
+
+@media (max-width: 900px) {
+  .promise__bg-img {
+    opacity: 0.55;
+  }
+}
+
+.promise__features {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: clamp(1.5rem, 4vw, 2.5rem);
+  margin-left: auto;
+  max-width: 420px;
+  text-align: right;
+  color: #eddca4;
+}
+.promise__feature {
+  display: flex;
+  flex-direction: row-reverse;
+  align-items: center;
+  gap: clamp(1rem, 3vw, 1.75rem);
+  opacity: 0;
+  transform: translateX(48px);
+  transition: opacity 0.4s ease, transform 0.4s ease;
+}
+.promise__feature.is-visible {
+  opacity: 1;
+  transform: translateX(0);
+}
+.promise__icon-wrap {
+  display: flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  width: clamp(70px, 7vw, 110px);
+  height: clamp(70px, 7vw, 110px);
+}
+.promise__feature img {
+  width: clamp(46px, 5vw, 74px);
+  height: auto;
+}
+.promise__feature p {
+  font-family: var(--font-display);
+  font-size: var(--fs-body);
+  max-width: 22ch;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .promise {
+    height: auto;
+  }
+  .promise__pin {
+    position: static;
+    height: auto;
+    padding-block: clamp(3rem, 8vw, 6rem);
+  }
+  .promise__bg {
+    display: none;
+  }
+  .promise__kicker,
+  .promise .section-title {
+    opacity: 1;
+  }
+  .promise__feature {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* ---------------------------------------------------
+   Gallery
+--------------------------------------------------- */
+.gallery {
+  padding-block: clamp(3rem, 8vw, 6rem);
+}
+.gallery .section-title { margin-bottom: clamp(1rem, 3vw, 2rem); }
+
+/* scroll stage: the video block starts as a small centered square and,
+   as the user scrolls through this stage's extra height, grows and
+   reshapes into the video's native ratio while sliding to the right —
+   driven by initVideoFrameMorph() in main.js */
+.gallery__video-stage {
+  position: relative;
+  height: 220vh;
+  margin-bottom: clamp(2rem, 5vw, 3.5rem);
+}
+.gallery__video-frame {
+  position: sticky;
+  top: 12vh;
+}
+/* revealed once the video finishes growing (initVideoFrameMorph.js
+   toggles .is-visible near the end of the scroll stage). Sits in
+   normal flow at the left; .gallery__video-main is taken out of flow
+   (position: absolute) so it can grow/slide on the right independently
+   of this paragraph's own width. */
+.gallery__video-desc {
+  max-width: min(320px, 34%);
+  font-family: var(--font-display);
+  font-size: var(--fs-body);
+  line-height: 1.55;
+  text-align: justify;
+  opacity: 0;
+  transform: translateY(12px);
+  transition: opacity 0.4s ease-out, transform 0.4s ease-out;
+}
+.gallery__video-desc.is-visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+/* width + left are driven by initVideoFrameMorph() in main.js, growing
+   from a small centered square to a wider right-aligned block */
+.gallery__video-main {
+  position: absolute;
+  top: 0;
+}
+.gallery__video-box {
+  position: relative;
+  overflow: hidden;
+  background: var(--color-tan);
+}
+.gallery__video {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+@media (max-width: 700px) {
+  .gallery__video-main {
+    position: static !important;
+    width: 100% !important;
+    left: auto !important;
+    margin-top: clamp(1rem, 4vw, 1.5rem);
+  }
+  .gallery__video-desc {
+    max-width: none;
+  }
+}
+
+.gallery__grid {
+  display: flex;
+  flex-direction: column;
+  gap: clamp(1rem, 2vw, 1.5rem);
+}
+.gallery__item {
+  display: flex;
+  align-items: center;
+  gap: clamp(1.5rem, 4vw, 3rem);
+}
+.gallery__item:nth-child(even) {
+  flex-direction: row-reverse;
+}
+.gallery__photo-pin {
+  flex: 0 1 clamp(200px, 26vw, 320px);
+}
+.gallery__photo {
+  position: relative;
+  width: 100%;
+  margin: 0;
+  aspect-ratio: 329 / 439;
+  overflow: hidden;
+  background: var(--color-tan);
+}
+.gallery__photo img {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+.gallery__caption {
+  flex: 1 1 380px;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+.gallery__title {
+  font-family: 'IM Fell DW Pica SC', serif;
+  font-weight: 400;
+  font-size: clamp(1.4rem, 1.2rem + 1.2vw, 2.2rem);
+  line-height: 1.1;
+}
+.gallery__desc {
+  font-family: var(--font-display);
+  font-size: var(--fs-body);
+  line-height: 1.55;
+  width: 100%;
+  text-align: justify;
+}
+
+@media (max-width: 700px) {
+  .gallery__item,
+  .gallery__item:nth-child(even) {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .gallery__photo-pin {
+    flex-basis: auto;
+  }
+}
+
+/* ---------------------------------------------------
+   Product
+--------------------------------------------------- */
+.product {
+  padding-block: clamp(3rem, 8vw, 6rem);
+}
+.product__grid {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: clamp(1.5rem, 4vw, 3rem);
+  margin-top: clamp(2rem, 6vw, 3.5rem);
+}
+.product__item {
+  position: relative;
+  width: clamp(220px, 30vw, 360px);
+  aspect-ratio: 329 / 439;
+  margin: 0;
+  overflow: hidden;
+}
+.product__actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: clamp(1.5rem, 4vw, 3rem);
+  margin-top: clamp(1.5rem, 4vw, 2.5rem);
+}
+.product__btn {
+  width: clamp(220px, 30vw, 360px);
+  padding-block: clamp(0.75rem, 2vw, 1rem);
+  border: 2px solid var(--color-brown);
+  border-radius: 20px;
+  background: var(--color-bg);
+  color: var(--color-ink);
+  font-family: var(--font-mono);
+  font-size: var(--fs-body);
+  cursor: pointer;
+  transition: background 0.2s ease, color 0.2s ease;
+}
+.product__btn:hover,
+.product__btn:focus-visible {
+  background: var(--color-brown);
+  color: #fff;
+}
+.product__photo {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.product__overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  padding: 1rem;
+  text-align: center;
+  background: linear-gradient(to top, rgba(20, 18, 16, 0.75) 0%, transparent 65%);
+  color: #fff;
+  font-family: var(--font-mono);
+  font-size: var(--fs-body);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  pointer-events: none;
+}
+.product__item:hover .product__overlay,
+.product__item:focus-within .product__overlay {
+  opacity: 1;
+}
+
+/* ---------------------------------------------------
+   FAQ
+--------------------------------------------------- */
+.faq {
+  padding-block: clamp(3rem, 8vw, 6rem);
+}
+.faq .section-title { margin-bottom: clamp(2rem, 6vw, 3.75rem); }
+
+.faq__list {
+  display: flex;
+  flex-direction: column;
+  gap: clamp(1rem, 3vw, 2.5rem);
+  max-width: 900px;
+  margin-inline: auto;
+}
+.faq__item {
+  background: var(--color-footer);
+  color: var(--color-ink);
+}
+.faq__toggle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  width: 100%;
+  border: none;
+  cursor: pointer;
+  background: none;
+  color: inherit;
+  padding: clamp(0.5rem, 1.5vw, 1rem) clamp(1.25rem, 6vw, 6.5rem) clamp(0.5rem, 1.5vw, 1rem) clamp(1.25rem, 5vw, 6.5rem);
+  text-align: left;
+  font-family: var(--font-mono);
+}
+.faq__question {
+  font-family: var(--font-display);
+  font-size: var(--fs-faq-q);
+}
+.faq__icon {
+  flex: none;
+  font-family: var(--font-mono);
+  font-weight: 700;
+  font-size: var(--fs-faq-icon);
+  transition: transform 0.25s ease;
+}
+.faq__toggle[aria-expanded="true"] .faq__icon {
+  transform: rotate(45deg);
+}
+
+.faq__answer {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 0.3s ease;
+}
+.faq__toggle[aria-expanded="true"] + .faq__answer {
+  grid-template-rows: 1fr;
+}
+.faq__answer-inner {
+  overflow: hidden;
+}
+.faq__answer-inner p {
+  margin: 0;
+  padding: 0 clamp(1.25rem, 6vw, 6.5rem) clamp(0.9rem, 2vw, 1.5rem) clamp(1.25rem, 5vw, 6.5rem);
+  font-size: var(--fs-body);
+  line-height: 1.55;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .faq__answer { transition: none; }
+}
+
+/* ---------------------------------------------------
+   Footer
+--------------------------------------------------- */
+.site-footer {
+  background: var(--color-footer);
+  margin-top: clamp(3rem, 8vw, 6rem);
+  padding-block: clamp(2.5rem, 6vw, 4.5rem);
+}
+.footer__info {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: clamp(2rem, 5vw, 4rem);
+  font-size: 0.8rem;
+}
+.footer__info-item--address {
+  max-width: 320px;
+}
+.footer__brand {
+  display: flex;
+  flex-direction: column;
+  gap: clamp(0.5rem, 1.5vw, 0.75rem);
+  margin-bottom: clamp(1.25rem, 4vw, 2.5rem);
+}
+.footer__brand-row {
+  display: flex;
+  align-items: center;
+  gap: clamp(1rem, 3vw, 2rem);
+}
+.footer__logo {
+  position: relative;
+  display: inline-block;
+}
+.footer__brand img {
+  width: clamp(50px, 6vw, 100px);
+  height: auto;
+  transition: opacity 0.3s ease;
+}
+.footer__logo .yellow-logo {
+  position: absolute;
+  top: 0;
+  left: 0;
+  opacity: 0;
+}
+.footer__logo:hover .brown-logo {
+  opacity: 0;
+}
+.footer__logo:hover .yellow-logo {
+  opacity: 1;
+}
+.footer__company {
+  font-family: var(--font-display);
+  font-size: var(--fs-footer-label);
+  white-space: nowrap;
+}
+.footer__label {
+  font-family: var(--font-display);
+  font-size: var(--fs-footer-label);
+  margin-top: clamp(0.75rem, 2vw, 1.5rem);
+}
+.footer__label:first-of-type { margin-top: 0; }
+.footer__whatsapp-icon {
+  width: clamp(16px, 1.4vw, 22px);
+  height: auto;
+}
+.footer__value {
+  font-family: var(--font-mono);
+  font-size: var(--fs-footer-value);
+  margin-top: 0.4em;
+}
+.footer__value--contact {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.35em;
+}
+.footer__contact-name {
+  font-family: var(--font-display);
+  font-size: 1.4em;
+  font-weight: normal;
+}
+.footer__contact-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5em;
+}
+.footer__whatsapp-link {
+  text-decoration: none;
+}
+.footer__whatsapp-link:hover {
+  text-decoration: underline;
+}
+.footer__links a {
+  font-family: var(--font-display);
+  font-size: var(--fs-footer-label);
+  text-decoration: none;
+}
+.footer__links a:hover { text-decoration: underline; }
