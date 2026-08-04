@@ -149,6 +149,16 @@ h1, h2, p { margin: 0; }
      cover crops the excess so the section doesn't run so tall */
   aspect-ratio: 1820 / 1100;
 }
+@media (max-width: 799px) {
+  .intro {
+    /* below 800px the grid stacks into a single column (title, badge,
+       text) and needs more height than the desktop ratio allows — a
+       fixed aspect-ratio here clips the content and lets .promise's
+       negative margin-top overlap it. Let height follow content instead;
+       .intro__bg still covers it via object-fit: cover. */
+    aspect-ratio: auto;
+  }
+}
 .intro__bg {
   position: absolute;
   inset: 0;
@@ -284,7 +294,7 @@ h1, h2, p { margin: 0; }
     align-items: center;
     column-gap: clamp(2rem, 5vw, 5rem);
   }
-  .intro__copy   { grid-column: 1; grid-row: 1; }
+  .intro__copy   { grid-column: 1; grid-row: 1s; }
   .intro__badge  { grid-column: 1; grid-row: 2; margin-inline: 0; }
   .intro__text   { grid-column: 2; grid-row: 1 / 3; max-width: 46ch; }
 }
@@ -297,7 +307,11 @@ h1, h2, p { margin: 0; }
   height: 260vh;
   margin-top: clamp(-60px, -4vw, -24px);
   background-image: url('../assets/DP-22055-001.jpg');
-  background-size: cover;
+  /* DP-22055-001.jpg is a scan with a ~3% cream mat border on all sides;
+     plain "cover" lines its top/bottom edges up almost exactly with the
+     wave dividers, so the border shows through as a hard line. Sizing a
+     bit past cover pushes the border out of the visible frame. */
+  background-size: auto 116%;
   background-position: center;
   background-repeat: no-repeat;
 }
@@ -311,10 +325,14 @@ h1, h2, p { margin: 0; }
   pointer-events: none;
 }
 .promise__divider-wrap--top {
-  top: 0;
+  /* 2px past the true edge, not flush: the wrap's fractional (11vw)
+     height doesn't rasterize in perfect lockstep with the flat DOM
+     seam below it, leaving a hairline gap at exact 0. The overlap
+     falls inside the divider's solid-color margin, so it's invisible. */
+  top: -2px;
 }
 .promise__divider-wrap--bottom {
-  bottom: 0;
+  bottom: -2px;
   transform: scaleY(-1);
 }
 .promise__divider {
@@ -371,6 +389,7 @@ h1, h2, p { margin: 0; }
   z-index: 2;
   text-align: left;
   color: #F7E7D7;
+  text-shadow: 0 1px 6px rgba(0, 0, 0, 0.6);
   font-family: var(--font-mono);
   font-size: clamp(0.75rem, 0.65rem + 0.4vw, 1rem);
   font-style: italic;
@@ -385,6 +404,7 @@ h1, h2, p { margin: 0; }
   text-align: right;
   margin-bottom: clamp(2.5rem, 8vw, 5.5rem);
   color: #F7E7D7;
+  text-shadow: 0 1px 6px rgba(0, 0, 0, 0.6);
   font-family: var(--font-mono);
   font-size: clamp(0.95rem, 0.85rem + 0.6vw, 1.4rem);
   font-style: italic;
@@ -393,12 +413,6 @@ h1, h2, p { margin: 0; }
 }
 .promise .section-title.is-visible {
   opacity: 1;
-}
-
-@media (max-width: 900px) {
-  .promise__bg-img {
-    opacity: 0.55;
-  }
 }
 
 .promise__features {
@@ -410,6 +424,7 @@ h1, h2, p { margin: 0; }
   max-width: 420px;
   text-align: right;
   color: #eddca4;
+  text-shadow: 0 1px 6px rgba(0, 0, 0, 0.6);
 }
 .promise__feature {
   display: flex;
@@ -525,14 +540,23 @@ h1, h2, p { margin: 0; }
 }
 
 @media (max-width: 700px) {
+  /* No side-by-side room on a single column, so the video stacks first
+     (still growing/repositioned by initVideoFrameMorph.js, just in
+     normal flow here instead of absolute) and the caption reveals
+     below it instead of to its left. */
+  .gallery__video-frame {
+    display: flex;
+    flex-direction: column;
+  }
   .gallery__video-main {
-    position: static !important;
-    width: 100% !important;
-    left: auto !important;
-    margin-top: clamp(1rem, 4vw, 1.5rem);
+    position: static;
+    order: 1;
+    margin-inline: auto;
   }
   .gallery__video-desc {
+    order: 2;
     max-width: none;
+    margin-top: clamp(1rem, 4vw, 1.5rem);
   }
 }
 

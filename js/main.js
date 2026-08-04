@@ -62,6 +62,7 @@
    paragraph to its left fades in. */
 (function initVideoFrameMorph() {
   const stage = document.querySelector('.gallery__video-stage');
+  const frame = document.querySelector('.gallery__video-frame');
   const main = document.querySelector('.gallery__video-main');
   const box = document.querySelector('.gallery__video-box');
   const desc = document.querySelector('.gallery__video-desc');
@@ -69,16 +70,24 @@
 
   const videoRatio = 1920 / 1440;
   const descRevealAt = 0.95;
+  const narrowQuery = window.matchMedia('(max-width: 700px)');
 
+  /* .gallery__video-main is position: absolute, so it never contributes
+     to .gallery__video-frame's own (sticky) box height — without this,
+     the frame's height comes only from the much-shorter description
+     paragraph, so the native CSS sticky release fires late relative to
+     the video's own grow animation, leaving it pinned in place over the
+     gallery grid until the frame's real box finally scrolls clear. */
   function applyMain(width, height, left) {
     main.style.width = `${width}px`;
     main.style.left = `${left}px`;
     box.style.height = `${height}px`;
+    if (frame) frame.style.minHeight = `${height}px`;
   }
 
   if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
     const stageWidth = stage.clientWidth;
-    const w = Math.min(480, stageWidth * 0.4);
+    const w = narrowQuery.matches ? stageWidth : Math.min(480, stageWidth * 0.4);
     applyMain(w, w / videoRatio, stageWidth - w);
     if (desc) desc.classList.add('is-visible');
     return;
@@ -97,15 +106,19 @@
     const progress = pinRange > 0
       ? Math.max(0, Math.min(1, -rect.top / pinRange))
       : 0;
+    /* Below the 700px breakpoint there's no side-by-side paragraph to
+       slide clear of, so the square grows in place instead of sliding
+       right: full stage width at the end, centered the whole time. */
+    const isNarrow = narrowQuery.matches;
 
     const widthMin = Math.min(220, stageWidth * 0.28);
-    const widthMax = Math.min(480, stageWidth * 0.55);
+    const widthMax = isNarrow ? stageWidth : Math.min(480, stageWidth * 0.55);
     const width = lerp(widthMin, widthMax, progress);
     const ratio = lerp(1, videoRatio, progress);
     const height = width / ratio;
     const centeredLeft = (stageWidth - width) / 2;
     const rightAlignedLeft = stageWidth - width;
-    const left = lerp(centeredLeft, rightAlignedLeft, progress);
+    const left = isNarrow ? centeredLeft : lerp(centeredLeft, rightAlignedLeft, progress);
 
     applyMain(width, height, left);
 
