@@ -65,7 +65,7 @@
   const frame = document.querySelector('.gallery__video-frame');
   const main = document.querySelector('.gallery__video-main');
   const box = document.querySelector('.gallery__video-box');
-  const desc = document.querySelector('.gallery__video-desc');
+  const caption = document.querySelector('.gallery__video-caption');
   if (!stage || !main || !box) return;
 
   const videoRatio = 1920 / 1440;
@@ -89,7 +89,7 @@
     const stageWidth = stage.clientWidth;
     const w = narrowQuery.matches ? stageWidth : Math.min(480, stageWidth * 0.4);
     applyMain(w, w / videoRatio, stageWidth - w);
-    if (desc) desc.classList.add('is-visible');
+    if (caption) caption.classList.add('is-visible');
     return;
   }
 
@@ -122,7 +122,7 @@
 
     applyMain(width, height, left);
 
-    if (desc) desc.classList.toggle('is-visible', progress >= descRevealAt);
+    if (caption) caption.classList.toggle('is-visible', progress >= descRevealAt);
 
     ticking = false;
   }

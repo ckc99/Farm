@@ -504,20 +504,31 @@ h1, h2, p { margin: 0; }
    toggles .is-visible near the end of the scroll stage). Sits in
    normal flow at the left; .gallery__video-main is taken out of flow
    (position: absolute) so it can grow/slide on the right independently
-   of this paragraph's own width. */
-.gallery__video-desc {
+   of this column's own width. */
+.gallery__video-caption {
   max-width: min(320px, 34%);
-  font-family: var(--font-display);
-  font-size: var(--fs-body);
-  line-height: 1.55;
-  text-align: justify;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
   opacity: 0;
   transform: translateY(12px);
   transition: opacity 0.4s ease-out, transform 0.4s ease-out;
 }
-.gallery__video-desc.is-visible {
+.gallery__video-caption.is-visible {
   opacity: 1;
   transform: translateY(0);
+}
+.gallery__video-title {
+  font-family: 'IM Fell DW Pica SC', serif;
+  font-weight: 400;
+  font-size: clamp(1.4rem, 1.2rem + 1.2vw, 2.2rem);
+  line-height: 1.1;
+}
+.gallery__video-desc {
+  font-family: var(--font-display);
+  font-size: var(--fs-body);
+  line-height: 1.55;
+  text-align: justify;
 }
 /* width + left are driven by initVideoFrameMorph() in main.js, growing
    from a small centered square to a wider right-aligned block */
@@ -553,7 +564,7 @@ h1, h2, p { margin: 0; }
     order: 1;
     margin-inline: auto;
   }
-  .gallery__video-desc {
+  .gallery__video-caption {
     order: 2;
     max-width: none;
     margin-top: clamp(1rem, 4vw, 1.5rem);
@@ -637,22 +648,31 @@ h1, h2, p { margin: 0; }
   gap: clamp(1.5rem, 4vw, 3rem);
   margin-top: clamp(2rem, 6vw, 3.5rem);
 }
+/* each photo is grouped with its own button so they stay paired when
+   stacked on narrow screens, instead of all photos then all buttons */
+.product__card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: clamp(1.5rem, 4vw, 2.5rem);
+  width: clamp(220px, 30vw, 360px);
+}
 .product__item {
   position: relative;
-  width: clamp(220px, 30vw, 360px);
+  width: 100%;
   aspect-ratio: 329 / 439;
   margin: 0;
   overflow: hidden;
 }
-.product__actions {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: clamp(1.5rem, 4vw, 3rem);
-  margin-top: clamp(1.5rem, 4vw, 2.5rem);
+/* the <a> wrapping .product__btn is inline by default, so as a flex
+   item under align-items: center it shrinks to the button's own text
+   width instead of the card's full width — force it to fill instead */
+.product__card > a {
+  display: block;
+  width: 100%;
 }
 .product__btn {
-  width: clamp(220px, 30vw, 360px);
+  width: 100%;
   padding-block: clamp(0.75rem, 2vw, 1rem);
   border: 2px solid var(--color-brown);
   border-radius: 20px;
@@ -721,7 +741,7 @@ h1, h2, p { margin: 0; }
   width: 100%;
   border: none;
   cursor: pointer;
-  background: none;
+  background: var(--color-footer);
   color: inherit;
   padding: clamp(0.5rem, 1.5vw, 1rem) clamp(1.25rem, 6vw, 6.5rem) clamp(0.5rem, 1.5vw, 1rem) clamp(1.25rem, 5vw, 6.5rem);
   text-align: left;
@@ -752,10 +772,11 @@ h1, h2, p { margin: 0; }
 }
 .faq__answer-inner {
   overflow: hidden;
+  background: var(--color-tan);
 }
 .faq__answer-inner p {
   margin: 0;
-  padding: 0 clamp(1.25rem, 6vw, 6.5rem) clamp(0.9rem, 2vw, 1.5rem) clamp(1.25rem, 5vw, 6.5rem);
+  padding: clamp(0.75rem, 2vw, 1.25rem) clamp(1.25rem, 6vw, 6.5rem) clamp(0.9rem, 2vw, 1.5rem) clamp(1.25rem, 5vw, 6.5rem);
   font-size: var(--fs-body);
   line-height: 1.55;
 }
@@ -856,9 +877,16 @@ h1, h2, p { margin: 0; }
 .footer__whatsapp-link:hover {
   text-decoration: underline;
 }
+.footer__links {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.35em;
+  margin-top: 0.4em;
+}
 .footer__links a {
-  font-family: var(--font-display);
-  font-size: var(--fs-footer-label);
+  font-family: var(--font-mono);
+  font-size: var(--fs-footer-value);
   text-decoration: none;
 }
 .footer__links a:hover { text-decoration: underline; }
