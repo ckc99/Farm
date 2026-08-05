@@ -139,6 +139,84 @@
   update();
 })();
 
+/* Gallery card slide: .gallery__stage-frame pins in place while the user
+   scrolls through .gallery__stage's extra height. Cards share the same
+   slot and stack in DOM order, so each card after the first starts
+   parked below the frame (translateY(100%)) and, on its turn, slides up
+   to translateY(0) — covering the previous card in place, no separate
+   curtain needed. Progress is split into a "hold" per card (parked or
+   settled, nothing moving) and a "transition" between each consecutive
+   pair (the next card sliding up); see CSS media query for the
+   narrow-viewport fallback where this doesn't get wired up at all. */
+(function initGalleryWipe() {
+  const stage = document.querySelector('.gallery__stage');
+  const items = document.querySelectorAll('.gallery__item');
+  if (!stage || !items.length) return;
+
+  const narrowQuery = window.matchMedia('(max-width: 700px)');
+  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches || narrowQuery.matches) {
+    items.forEach((item) => { item.style.transform = 'translateY(0)'; });
+    return;
+  }
+
+  function lerp(a, b, t) {
+    return a + (b - a) * t;
+  }
+
+  const transitionCount = items.length - 1;
+  const transitionWidth = 0.14;
+  const holdWidth = (1 - transitionCount * transitionWidth) / items.length;
+
+  /* [start, end] progress window during which card i+1 slides up over
+     card i; the gaps between windows are the holds either side of it. */
+  const transitions = [];
+  let cursor = holdWidth;
+  for (let i = 0; i < transitionCount; i++) {
+    transitions.push([cursor, cursor + transitionWidth]);
+    cursor += transitionWidth + holdWidth;
+  }
+
+  let ticking = false;
+
+  function update() {
+    const rect = stage.getBoundingClientRect();
+    const pinRange = stage.offsetHeight - window.innerHeight;
+    const progress = pinRange > 0
+      ? Math.max(0, Math.min(1, -rect.top / pinRange))
+      : 0;
+
+    items.forEach((item, i) => {
+      if (i === 0) {
+        item.style.transform = 'translateY(0)';
+        return;
+      }
+      const [start, end] = transitions[i - 1];
+      let y;
+      if (progress <= start) {
+        y = 100;
+      } else if (progress >= end) {
+        y = 0;
+      } else {
+        y = lerp(100, 0, (progress - start) / (end - start));
+      }
+      item.style.transform = `translateY(${y}%)`;
+    });
+
+    ticking = false;
+  }
+
+  window.addEventListener('scroll', () => {
+    if (!ticking) {
+      requestAnimationFrame(update);
+      ticking = true;
+    }
+  }, { passive: true });
+
+  window.addEventListener('resize', update);
+
+  update();
+})();
+
 /* Wave dividers: the rolling-hills edges at the top and bottom of the
    Promise section shift horizontally as the page scrolls, so the wave
    physically moves while scrolling and freezes the instant scrolling

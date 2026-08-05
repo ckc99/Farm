@@ -226,7 +226,7 @@ h1, h2, p { margin: 0; }
 /* title */
 .intro__copy {
   order: 1;
-  flex: 1 1 380px;
+  flex: 1 1 auto;
   align-self: center;
   margin-top: clamp(1.5rem, 5vw, 4rem);
 }
@@ -277,13 +277,26 @@ h1, h2, p { margin: 0; }
 
 .intro__text {
   position: relative;
-  order: 4;
-  flex: 1 1 420px;
+  order: 2;
+  flex: 1 1 auto;
   align-self: center;
   font-family: var(--font-mono);
   font-size: var(--fs-body);
   line-height: 1.55;
+  text-align: justify;
   max-width: 45ch;
+}
+
+@media (max-width: 799px) {
+  /* .footprints trails the paragraph via absolute positioning (top:
+     100%, measured off .intro__text's own box), so it doesn't
+     contribute to that box's height. Now that the badge follows the
+     paragraph in mobile stacking order, push the badge down with a
+     margin (which doesn't feed back into footprints' own position,
+     unlike padding) so it clears the footprints instead of covering it. */
+  .intro__text {
+    margin-bottom: calc(clamp(0.5rem, 2vw, 1rem) + clamp(70px, 9vw, 130px));
+  }
 }
 
 @media (min-width: 800px) {
@@ -493,7 +506,7 @@ h1, h2, p { margin: 0; }
    driven by initVideoFrameMorph() in main.js */
 .gallery__video-stage {
   position: relative;
-  height: 220vh;
+  height: 150vh;
   margin-bottom: clamp(2rem, 5vw, 3.5rem);
 }
 .gallery__video-frame {
@@ -571,27 +584,48 @@ h1, h2, p { margin: 0; }
   }
 }
 
+/* Pinned slide stage: the frame sticks in place while the user scrolls
+   through .gallery__stage's extra height. Cards are stacked in the same
+   slot (later cards painting over earlier ones, per normal DOM stacking
+   order) and each card after the first starts parked below the frame;
+   as its turn comes up it slides up over the previous card, covering it
+   in place — see initGalleryWipe() in main.js. */
+.gallery__stage {
+  position: relative;
+  height: 300vh;
+  margin-bottom: clamp(2rem, 5vw, 3.5rem);
+}
+.gallery__stage-frame {
+  position: sticky;
+  top: 12vh;
+  height: min(70vh, 560px);
+  overflow: hidden;
+}
 .gallery__grid {
-  display: flex;
-  flex-direction: column;
-  gap: clamp(1rem, 2vw, 1.5rem);
+  position: relative;
+  height: 100%;
 }
 .gallery__item {
+  position: absolute;
+  inset: 0;
   display: flex;
   align-items: center;
   gap: clamp(1.5rem, 4vw, 3rem);
+  background: var(--color-bg);
+  transform: translateY(100%);
 }
 .gallery__item:nth-child(even) {
   flex-direction: row-reverse;
 }
 .gallery__photo-pin {
   flex: 0 1 clamp(200px, 26vw, 320px);
+  height: 100%;
 }
 .gallery__photo {
   position: relative;
   width: 100%;
+  height: 100%;
   margin: 0;
-  aspect-ratio: 329 / 439;
   overflow: hidden;
   background: var(--color-tan);
 }
@@ -609,6 +643,8 @@ h1, h2, p { margin: 0; }
   display: flex;
   flex-direction: column;
   gap: 0.6rem;
+  max-height: 100%;
+  overflow-y: auto;
 }
 .gallery__title {
   font-family: 'IM Fell DW Pica SC', serif;
@@ -625,13 +661,43 @@ h1, h2, p { margin: 0; }
 }
 
 @media (max-width: 700px) {
+  /* No headroom on a single narrow column to hold a photo, a title, and
+     a full paragraph inside a pinned viewport-height frame without
+     clipping, so the pin/slide is dropped in favor of the cards just
+     stacking in normal document flow (initGalleryWipe() also skips
+     wiring up the scroll listener at this width). */
+  .gallery__stage {
+    height: auto;
+  }
+  .gallery__stage-frame {
+    position: static;
+    height: auto;
+    overflow: visible;
+  }
+  .gallery__grid {
+    height: auto;
+    display: flex;
+    flex-direction: column;
+    gap: clamp(1rem, 2vw, 1.5rem);
+  }
   .gallery__item,
   .gallery__item:nth-child(even) {
+    position: static;
+    transform: none;
     flex-direction: column;
     align-items: stretch;
   }
   .gallery__photo-pin {
     flex-basis: auto;
+    height: auto;
+  }
+  .gallery__photo {
+    height: auto;
+    aspect-ratio: 329 / 439;
+  }
+  .gallery__caption {
+    max-height: none;
+    overflow-y: visible;
   }
 }
 
@@ -730,7 +796,6 @@ h1, h2, p { margin: 0; }
   margin-inline: auto;
 }
 .faq__item {
-  background: var(--color-footer);
   color: var(--color-ink);
 }
 .faq__toggle {
@@ -772,7 +837,7 @@ h1, h2, p { margin: 0; }
 }
 .faq__answer-inner {
   overflow: hidden;
-  background: var(--color-tan);
+  background: rgba(201, 181, 156, 0.5); /* --color-footer at lower opacity */
 }
 .faq__answer-inner p {
   margin: 0;
