@@ -53,7 +53,7 @@
   update();
 })();
 
-/* Video frame morph: chicks.wbep starts as a small square block centered
+/* Video frame morph: chicks.wbem starts as a small square block centered
    in the gallery, then as the user scrolls through the stage's extra
    height, it grows (to a modest size, not the full column width) and
    reshapes from a 1:1 square into the video's native 1920:1440 ratio
