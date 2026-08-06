@@ -319,8 +319,8 @@ h1, h2, p { margin: 0; }
   position: relative;
   height: 260vh;
   margin-top: clamp(-60px, -4vw, -24px);
-  background-image: url('../assets/DP-22055-001.jpg');
-  /* DP-22055-001.jpg is a scan with a ~3% cream mat border on all sides;
+  background-image: url('../assets/DP-22055-001.webp');
+  /* DP-22055-001.webp is a scan with a ~3% cream mat border on all sides;
      plain "cover" lines its top/bottom edges up almost exactly with the
      wave dividers, so the border shows through as a hard line. Sizing a
      bit past cover pushes the border out of the visible frame. */

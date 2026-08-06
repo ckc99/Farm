@@ -267,7 +267,7 @@
 })();
 
 /* Pin: "We Promised" stays fixed in the viewport as a sticky background
-   (Fullchicken.png) while its section scrolls. The 3 feature cards slide
+   (Fullchicken.webp) while its section scrolls. The 3 feature cards slide
    in one by one, and with each new one, the background pans and zooms
    to a new focus point on the chicken. Once the last card has passed,
    the pin releases and the background scrolls away naturally as the
