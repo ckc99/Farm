@@ -566,6 +566,31 @@ h1, h2, p { margin: 0; }
   object-fit: cover;
   display: block;
 }
+/* Hidden unless initVideoAutoplayFallback() (main.js) detects autoplay was
+   blocked (iOS Low Power Mode and some Android battery-saver modes disable
+   video autoplay outright to save power — no JS can override that, only a
+   real tap can start playback) and adds .is-paused to the box. */
+.gallery__video-play {
+  display: none;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: clamp(48px, 12vw, 64px);
+  aspect-ratio: 1 / 1;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  border-radius: 50%;
+  background: rgba(20, 18, 16, 0.55);
+  color: #fff;
+  font-size: clamp(1.1rem, 3vw, 1.5rem);
+  cursor: pointer;
+  z-index: 1;
+}
+.gallery__video-box.is-paused .gallery__video-play {
+  display: flex;
+}
 
 @media (max-width: 700px) {
   /* No side-by-side room on a single column, so the video stacks first

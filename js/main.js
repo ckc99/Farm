@@ -53,7 +53,37 @@
   update();
 })();
 
-/* Video frame morph: chicks.wbem starts as a small square block centered
+/* Autoplay fallback: iOS Low Power Mode and some Android battery-saver
+   modes silently block <video autoplay> outright to save power — the
+   poster image just sits there forever with no error a site can recover
+   from automatically. The only way around that policy is a real tap, so
+   when autoplay fails (or the video stops on its own mid-scroll for the
+   same reason) a play button appears over the poster; tapping it retries
+   play() from within an actual user gesture, which browsers always honor
+   regardless of power-saving settings. */
+(function initVideoAutoplayFallback() {
+  const video = document.querySelector('.gallery__video');
+  const box = document.querySelector('.gallery__video-box');
+  const playBtn = document.querySelector('.gallery__video-play');
+  if (!video || !box || !playBtn) return;
+
+  const showButton = () => box.classList.add('is-paused');
+  const hideButton = () => box.classList.remove('is-paused');
+
+  video.addEventListener('playing', hideButton);
+  video.addEventListener('pause', showButton);
+
+  const attempt = video.play();
+  if (attempt && typeof attempt.catch === 'function') {
+    attempt.catch(showButton);
+  }
+
+  playBtn.addEventListener('click', () => {
+    video.play().catch(() => {});
+  });
+})();
+
+/* Video frame morph: chicks.webm starts as a small square block centered
    in the gallery, then as the user scrolls through the stage's extra
    height, it grows (to a modest size, not the full column width) and
    reshapes from a 1:1 square into the video's native 1920:1440 ratio
