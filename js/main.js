@@ -1,57 +1,54 @@
-/* Parallax: chicken-sketch.png spins in step with page scroll. */
-(function initChickenParallax() {
-  const chicken = document.querySelector('.intro__badge-chicken');
-  if (!chicken) return;
+/* Shared by the scroll-driven modules below. This file has no bundler/module
+   system, so these live as plain top-level helpers instead of being
+   copy-pasted into each IIFE. */
+const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+function lerp(a, b, t) {
+  return a + (b - a) * t;
+}
 
-  const degreesPerPixel = 0.08;
-  const startingAngle = -20;
+/* Wraps `index + delta` into [0, length) — shared by the gallery and
+   product slideshows' prev/next arrows. */
+function cycleIndex(index, delta, length) {
+  return (index + delta + length) % length;
+}
+
+/* Runs `fn` on scroll, throttled to at most once per animation frame. */
+function onScrollFrame(fn) {
   let ticking = false;
+  window.addEventListener('scroll', () => {
+    if (!ticking) {
+      requestAnimationFrame(() => {
+        fn();
+        ticking = false;
+      });
+      ticking = true;
+    }
+  }, { passive: true });
+}
+
+/* Parallax: an element's rotation tracks page scroll. Shared by
+   chicken-sketch.png and the "free range chicken" circular text around it,
+   which spin at different rates in opposite directions. */
+function initRotateOnScroll(selector, { degreesPerPixel, startingAngle = 0, transformPrefix = '' }) {
+  const el = document.querySelector(selector);
+  if (!el || prefersReducedMotion) return;
 
   function update() {
     const angle = startingAngle + (window.scrollY * degreesPerPixel);
-    chicken.style.transform = `translate(-50%, -50%) rotate(${angle}deg)`;
-    ticking = false;
+    el.style.transform = `${transformPrefix}rotate(${angle}deg)`;
   }
 
-  window.addEventListener('scroll', () => {
-    if (!ticking) {
-      requestAnimationFrame(update);
-      ticking = true;
-    }
-  }, { passive: true });
-
+  onScrollFrame(update);
   update();
-})();
+}
 
-/* Parallax: the "free range chicken" circular text spins opposite
-   to chicken-sketch.png. */
-(function initBadgeTextParallax() {
-  const text = document.querySelector('.intro__badge-text');
-  if (!text) return;
-
-  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-
-  const degreesPerPixel = -0.15;
-  
-  let ticking = false;
-
-  function update() {
-    const angle = window.scrollY * degreesPerPixel;
-    text.style.transform = `rotate(${angle}deg)`;
-    ticking = false;
-  }
-
-  window.addEventListener('scroll', () => {
-    if (!ticking) {
-      requestAnimationFrame(update);
-      ticking = true;
-    }
-  }, { passive: true });
-
-  update();
-})();
+initRotateOnScroll('.intro__badge-chicken', {
+  degreesPerPixel: 0.08,
+  startingAngle: -20,
+  transformPrefix: 'translate(-50%, -50%) ',
+});
+initRotateOnScroll('.intro__badge-text', { degreesPerPixel: -0.15 });
 
 /* Autoplay fallback: iOS Low Power Mode and some Android battery-saver
    modes silently block <video autoplay> outright to save power — the
@@ -96,11 +93,34 @@
   const main = document.querySelector('.gallery__video-main');
   const box = document.querySelector('.gallery__video-box');
   const caption = document.querySelector('.gallery__video-caption');
+  /* Reference elements from the photo slideshow below — the video row is
+     inset to land flush with these (photo's left edge, caption's right
+     edge) rather than with the slideshow's own flanking arrow buttons, so
+     the two rows line up visually. */
+  const alignPhoto = document.querySelector('.gallery__slide-photo');
+  const alignCaption = document.querySelector('.gallery__slide-caption');
   if (!stage || !main || !box) return;
 
   const videoRatio = 1920 / 1440;
   const descRevealAt = 0.95;
+  const captionGap = 40;
   const narrowQuery = window.matchMedia('(max-width: 700px)');
+
+  /* Re-measured on resize alongside stageWidth — layout-dependent, not
+     scroll-dependent. Both stay 0 (no inset) at narrow widths, where the
+     video stacks full-width above the caption instead of sitting beside it. */
+  let insetLeft = 0;
+  let insetRight = 0;
+  function measureInset() {
+    if (narrowQuery.matches || !alignPhoto || !alignCaption) {
+      insetLeft = 0;
+      insetRight = 0;
+      return;
+    }
+    const stageRect = stage.getBoundingClientRect();
+    insetLeft = Math.max(0, alignPhoto.getBoundingClientRect().left - stageRect.left);
+    insetRight = Math.max(0, stageRect.right - alignCaption.getBoundingClientRect().right);
+  }
 
   /* .gallery__video-main is position: absolute, so it never contributes
      to .gallery__video-frame's own (sticky) box height — without this,
@@ -108,31 +128,50 @@
      paragraph, so the native CSS sticky release fires late relative to
      the video's own grow animation, leaving it pinned in place over the
      gallery grid until the frame's real box finally scrolls clear. */
-  function applyMain(width, height, left) {
+  function applyMain(width, height, left, syncCaptionWidth) {
     main.style.width = `${width}px`;
     main.style.left = `${left}px`;
     box.style.height = `${height}px`;
     if (frame) frame.style.minHeight = `${height}px`;
+    /* The caption's CSS width is sized independently of the video's actual
+       position/inset, which on wide viewports left a wide gap of empty
+       space between them — sizing and offsetting it off the video's real
+       left edge and the photo-slideshow's inset instead keeps a fixed,
+       small gap and a flush left edge regardless of viewport width. Only
+       applies in the side-by-side (non-narrow) layout; at narrow widths
+       the caption stacks below the video at full width, so the inline
+       override is cleared and CSS takes back over. */
+    if (caption) {
+      if (syncCaptionWidth) {
+        caption.style.marginLeft = `${insetLeft}px`;
+        caption.style.width = `${Math.max(160, left - captionGap - insetLeft)}px`;
+      } else {
+        caption.style.marginLeft = '';
+        caption.style.width = '';
+      }
+    }
   }
 
-  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+  if (prefersReducedMotion) {
+    measureInset();
     const stageWidth = stage.clientWidth;
-    const w = narrowQuery.matches ? stageWidth : Math.min(480, stageWidth * 0.4);
-    applyMain(w, w / videoRatio, stageWidth - w);
+    const usableRight = stageWidth - insetRight;
+    const w = narrowQuery.matches ? stageWidth : Math.min(480, (usableRight - insetLeft) * 0.4);
+    applyMain(w, w / videoRatio, usableRight - w, !narrowQuery.matches);
     if (caption) caption.classList.add('is-visible');
     return;
   }
 
-  function lerp(a, b, t) {
-    return a + (b - a) * t;
-  }
-
-  let ticking = false;
+  /* Re-measured on resize rather than every scroll frame — the stage's own
+     size only ever changes on resize, so re-reading it on each scroll tick
+     just forces an extra synchronous layout for no reason. */
+  let stageWidth = stage.clientWidth;
+  let stageHeight = stage.offsetHeight;
+  measureInset();
 
   function update() {
-    const stageWidth = stage.clientWidth;
     const rect = stage.getBoundingClientRect();
-    const pinRange = stage.offsetHeight - window.innerHeight;
+    const pinRange = stageHeight - window.innerHeight;
     const progress = pinRange > 0
       ? Math.max(0, Math.min(1, -rect.top / pinRange))
       : 0;
@@ -140,6 +179,7 @@
        slide clear of, so the square grows in place instead of sliding
        right: full stage width at the end, centered the whole time. */
     const isNarrow = narrowQuery.matches;
+    const usableRight = stageWidth - insetRight;
 
     const widthMin = Math.min(220, stageWidth * 0.28);
     const widthMax = isNarrow ? stageWidth : Math.min(480, stageWidth * 0.55);
@@ -147,104 +187,90 @@
     const ratio = lerp(1, videoRatio, progress);
     const height = width / ratio;
     const centeredLeft = (stageWidth - width) / 2;
-    const rightAlignedLeft = stageWidth - width;
+    const rightAlignedLeft = usableRight - width;
     const left = isNarrow ? centeredLeft : lerp(centeredLeft, rightAlignedLeft, progress);
 
-    applyMain(width, height, left);
+    applyMain(width, height, left, !isNarrow);
 
     if (caption) caption.classList.toggle('is-visible', progress >= descRevealAt);
-
-    ticking = false;
   }
 
-  window.addEventListener('scroll', () => {
-    if (!ticking) {
-      requestAnimationFrame(update);
-      ticking = true;
-    }
-  }, { passive: true });
+  onScrollFrame(update);
 
-  window.addEventListener('resize', update);
+  window.addEventListener('resize', () => {
+    stageWidth = stage.clientWidth;
+    stageHeight = stage.offsetHeight;
+    measureInset();
+    update();
+  });
 
   update();
 })();
 
-/* Gallery card slide: .gallery__stage-frame pins in place while the user
-   scrolls through .gallery__stage's extra height. Cards share the same
-   slot and stack in DOM order, so each card after the first starts
-   parked below the frame (translateY(100%)) and, on its turn, slides up
-   to translateY(0) — covering the previous card in place, no separate
-   curtain needed. Progress is split into a "hold" per card (parked or
-   settled, nothing moving) and a "transition" between each consecutive
-   pair (the next card sliding up); see CSS media query for the
-   narrow-viewport fallback where this doesn't get wired up at all. */
-(function initGalleryWipe() {
-  const stage = document.querySelector('.gallery__stage');
-  const items = document.querySelectorAll('.gallery__item');
-  if (!stage || !items.length) return;
+/* Photo slideshow: arrows step through a fixed set of farm photos, each
+   with its own title/description. Same pattern as initProductSlideshow(),
+   just simpler (no whole/cut toggle). */
+(function initGallerySlideshow() {
+  const photo = document.querySelector('.gallery__slide-photo');
+  const img = document.getElementById('gallery-slide-img');
+  const title = document.getElementById('gallery-slide-title');
+  const desc = document.getElementById('gallery-slide-desc');
+  const overlay = document.getElementById('gallery-slide-overlay');
+  const overlayDesc = document.getElementById('gallery-slide-overlay-desc');
+  const prevBtn = document.querySelector('.gallery__slideshow .arrow-btn--prev');
+  const nextBtn = document.querySelector('.gallery__slideshow .arrow-btn--next');
+  if (!photo || !img || !title || !desc || !prevBtn || !nextBtn) return;
 
-  const narrowQuery = window.matchMedia('(max-width: 700px)');
-  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches || narrowQuery.matches) {
-    items.forEach((item) => { item.style.transform = 'translateY(0)'; });
-    return;
+  const slides = [
+    {
+      src: 'assets/gallery-1.webp',
+      alt: 'Foraging for better nutrition',
+      title: '"Foraging for Better Nutrition"',
+      desc: 'Our free range chickens have access to the outdoors and hence are able to forage naturally on insects, seeds, and plants. Studies have shown that combined with increased activity, free-range chickens generally have higher levels of omega-3 fatty acids, which helps support heart health, reduce inflammation, and benefit brain function, compared to conventionally raised chickens. Also due to their active movement, free-range chicken breasts generally have significantly less saturated fat and hence are more tender and healthier.',
+    },
+    {
+      src: 'assets/gallery-2.webp',
+      alt: 'Slow-grown for premium texture',
+      title: '"Slow-Grown for Premium Texture"',
+      desc: 'In our farm, we practice a slow-growth system in raising our chickens. All our chickens are raised for more than 80 days! By allowing our chickens to grow naturally according to their biological needs, in contrast to current commercial fast-growing broilers, our chickens have better biological integrity and stronger immune systems. This allows us to refrain from the usage of antibiotics on our chickens. Also, because of this longer growing time, our chickens have finer breast fibers, which results in premium firm and juicy meat!',
+    },
+    {
+      src: 'assets/gallery-3.webp',
+      alt: 'Vacuum chicken',
+      title: '"Locked-In Freshness"',
+      desc: 'Our chickens are handled with vacuum packaging and blast freezing to preserve the premium meat quality. While the vacuum packaging ensures no oxidation degradation, the blast freezing ensures that no freezer burn happens within the meat. Together, they create the perfect combination to preserve the juiciness and tenderness of the meat.',
+    },
+  ];
+
+  let index = 0;
+
+  function render() {
+    const slide = slides[index];
+    img.src = slide.src;
+    img.alt = slide.alt;
+    title.textContent = slide.title;
+    desc.textContent = slide.desc;
+    if (overlayDesc) overlayDesc.textContent = slide.desc;
+    if (overlay) overlay.classList.remove('is-visible');
   }
 
-  function lerp(a, b, t) {
-    return a + (b - a) * t;
-  }
+  prevBtn.addEventListener('click', () => {
+    index = cycleIndex(index, -1, slides.length);
+    render();
+  });
 
-  const transitionCount = items.length - 1;
-  const transitionWidth = 0.14;
-  const holdWidth = (1 - transitionCount * transitionWidth) / items.length;
+  nextBtn.addEventListener('click', () => {
+    index = cycleIndex(index, 1, slides.length);
+    render();
+  });
 
-  /* [start, end] progress window during which card i+1 slides up over
-     card i; the gaps between windows are the holds either side of it. */
-  const transitions = [];
-  let cursor = holdWidth;
-  for (let i = 0; i < transitionCount; i++) {
-    transitions.push([cursor, cursor + transitionWidth]);
-    cursor += transitionWidth + holdWidth;
-  }
-
-  let ticking = false;
-
-  function update() {
-    const rect = stage.getBoundingClientRect();
-    const pinRange = stage.offsetHeight - window.innerHeight;
-    const progress = pinRange > 0
-      ? Math.max(0, Math.min(1, -rect.top / pinRange))
-      : 0;
-
-    items.forEach((item, i) => {
-      if (i === 0) {
-        item.style.transform = 'translateY(0)';
-        return;
-      }
-      const [start, end] = transitions[i - 1];
-      let y;
-      if (progress <= start) {
-        y = 100;
-      } else if (progress >= end) {
-        y = 0;
-      } else {
-        y = lerp(100, 0, (progress - start) / (end - start));
-      }
-      item.style.transform = `translateY(${y}%)`;
+  /* Mobile-only tap-to-reveal: the description overlay is display:none on
+     desktop (CSS), so this toggle has no visible effect there. */
+  if (overlay) {
+    photo.addEventListener('click', () => {
+      overlay.classList.toggle('is-visible');
     });
-
-    ticking = false;
   }
-
-  window.addEventListener('scroll', () => {
-    if (!ticking) {
-      requestAnimationFrame(update);
-      ticking = true;
-    }
-  }, { passive: true });
-
-  window.addEventListener('resize', update);
-
-  update();
 })();
 
 /* Wave dividers: the rolling-hills edges at the top and bottom of the
@@ -260,10 +286,11 @@
   ].filter((w) => w.wrap);
   if (!waves.length) return;
 
-  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  if (prefersReducedMotion) return;
 
   waves.forEach((w) => {
     w.svg = w.wrap.querySelector('.promise__divider');
+    w.period = w.wrap.offsetWidth;
   });
 
   function loopedOffset(value, period) {
@@ -272,134 +299,219 @@
     return m < 0 ? m + period : m;
   }
 
-  let ticking = false;
-
   function update() {
     waves.forEach((w) => {
-      const period = w.wrap.offsetWidth;
       const raw = window.scrollY * w.speed;
-      const offset = -loopedOffset(raw, period);
+      const offset = -loopedOffset(raw, w.period);
       w.svg.style.transform = `translateX(${offset}px)`;
     });
-    ticking = false;
   }
 
-  window.addEventListener('scroll', () => {
-    if (!ticking) {
-      requestAnimationFrame(update);
-      ticking = true;
-    }
-  }, { passive: true });
+  onScrollFrame(update);
 
-  window.addEventListener('resize', update);
+  window.addEventListener('resize', () => {
+    waves.forEach((w) => { w.period = w.wrap.offsetWidth; });
+    update();
+  });
 
   update();
 })();
 
-/* Pin: "We Promised" stays fixed in the viewport as a sticky background
-   (Fullchicken.webp) while its section scrolls. The 3 feature cards slide
-   in one by one, and with each new one, the background pans and zooms
-   to a new focus point on the chicken. Once the last card has passed,
-   the pin releases and the background scrolls away naturally as the
-   gallery section takes over. */
-(function initPromisePin() {
-  const section = document.querySelector('.promise');
-  const features = document.querySelectorAll('.promise__feature');
-  const bgImg = document.querySelector('.promise__bg-img');
-  const title = document.querySelector('.promise .section-title');
-  const kicker = document.querySelector('.promise__kicker');
-  if (!section || !features.length) return;
+/* Farm background: pinned in place (CSS position: sticky) while the
+   title/description scroll over it. Once that content has fully scrolled
+   past — no more overlay left to read — continued scrolling drives the
+   still-pinned background through one "ramp" per .farm__reveal (each
+   either zooms further in, or — like the lake photo's stage — holds the
+   zoom and pans sideways instead), over a fixed distance (rampDuration).
+   Once a ramp finishes, that reveal pops in over the background and holds
+   for a fixed distance (holdDuration), then fades as the next ramp begins,
+   and so on, with the last reveal holding until the section finally
+   releases into the footer. clearPoint is the scroll distance (in
+   "distance scrolled into the section" units) at which the content's
+   bottom edge clears the viewport top; recomputed fresh each frame from
+   live rects rather than cached, but algebraically constant since content
+   moves 1:1 with scroll while the section itself is the thing being
+   measured against. */
+(function initFarmZoom() {
+  const section = document.querySelector('.farm');
+  const wrap = section ? section.querySelector('.wrap') : null;
+  const bgImg = document.querySelector('.farm__bg-img');
+  let reveals = Array.from(document.querySelectorAll('.farm__reveal'));
+  if (!section || !wrap || !bgImg) return;
 
-  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-    features.forEach((feature) => feature.classList.add('is-visible'));
-    if (title) title.classList.add('is-visible');
-    if (kicker) kicker.classList.add('is-visible');
+  // one entry per .farm__reveal, in order: what changes during that
+  // reveal's ramp, and the value it lands on. Matched to `reveals` by
+  // index, so it must have exactly one entry per .farm__reveal in the
+  // HTML — if a reveal is added/removed without updating this, extra
+  // reveals are dropped (with a warning) rather than crashing the loop.
+  const stages = [
+    { type: 'zoom', value: 1.25 },
+    { type: 'zoom', value: 1.6 },
+    { type: 'pan', value: 82 }, // stop zooming, pan the origin toward the right side of the photo
+    { type: 'zoom', value: 1 }, // zoom back out to the original resting size
+  ];
+
+  if (reveals.length > stages.length) {
+    console.warn(`initFarmZoom: ${reveals.length} .farm__reveal elements but only ${stages.length} stages defined — add a matching stages entry for each reveal. Extra reveals will never appear.`);
+    reveals = reveals.slice(0, stages.length);
+  }
+
+  // alternate each card's slide-in/out side so consecutive reveals visibly
+  // cross from opposite directions instead of just fading in place.
+  reveals.forEach((el, i) => {
+    el.classList.add(i % 2 === 0 ? 'farm__reveal--left' : 'farm__reveal--right');
+  });
+
+  if (prefersReducedMotion) {
+    reveals.forEach((el) => el.classList.add('is-visible'));
     return;
   }
 
-  const titleThreshold = 0.05;
-  const kickerFadeOutStart = 0.18;
-  const thresholds = [0.24, 0.42, 0.72];
-  const stops = [0, 0.24, 0.38, 0.42, 0.72, 1];
-
-  /* One focus keyframe per label, the resting entry shot at index 0, and a
-     final keyframe that zooms back out to that same resting shot as the
-     pin's scroll room runs out, so the chicken is back to normal size by
-     the time the gallery section takes over. Between label 1 and label 2,
-     the camera holds its spot and just zooms in (no pan, so nothing drifts
-     upward) until right before label 2, where it jumps straight to the
-     breast/leg framing. */
-  const focusFrames = [
-    { x: 30, y: 50, scale: 0.6 },   // entry: small, sitting on the left
-    { x: 30, y: 50, scale: 0.7 },   // "Raised naturally" -> same left spot, grown a bit bigger
-    { x: 30, y: 50, scale: 1.0 },   // still zooming in on the same spot, no pan yet
-    { x: 36, y: 90, scale: 1.25 },  // "Premium meat quality" -> jump straight to chicken breast & leg
-    { x: 35, y: 10, scale: 1.3 },   // "Free of antibiotics..." -> comb & neck feathers together
-    { x: 30, y: 50, scale: 0.6 },   // zoom back out to normal before releasing into gallery
-  ];
-
-  function lerp(a, b, t) {
-    return a + (b - a) * t;
-  }
-
-  function focusAt(progress) {
-    if (progress >= 1) {
-      return focusFrames[focusFrames.length - 1];
-    }
-    let i = 0;
-    while (i < stops.length - 1 && progress >= stops[i + 1]) i++;
-    const segStart = stops[i];
-    const segEnd = stops[i + 1];
-    const t = (progress - segStart) / (segEnd - segStart);
-    const a = focusFrames[i];
-    const b = focusFrames[i + 1];
-    return {
-      x: lerp(a.x, b.x, t),
-      y: lerp(a.y, b.y, t),
-      scale: lerp(a.scale, b.scale, t),
-    };
-  }
-
-  let ticking = false;
+  const scaleStart = 1;
+  const originXStart = 42; // matches the CSS resting object-position/transform-origin
+  const originY = 27;
+  const rampDuration = 0.6; // fraction of viewport height each ramp takes
+  const holdDuration = 1.1; // fraction of viewport height each non-final reveal holds for
 
   function update() {
-    const rect = section.getBoundingClientRect();
-    const scrollable = section.offsetHeight - window.innerHeight;
-    const progress = scrollable > 0
-      ? Math.min(1, Math.max(0, -rect.top / scrollable))
-      : 1;
+    const sectionRect = section.getBoundingClientRect();
+    const wrapRect = wrap.getBoundingClientRect();
+    const pinRange = sectionRect.height - window.innerHeight;
+    if (pinRange <= 0) return;
 
-    features.forEach((feature, i) => {
-      feature.classList.toggle('is-visible', progress >= thresholds[i]);
-    });
+    const scrolledIntoSection = -sectionRect.top;
+    const clearPoint = scrolledIntoSection + wrapRect.bottom;
+    const rampRange = window.innerHeight * rampDuration;
+    const holdRange = window.innerHeight * holdDuration;
 
-    if (title) {
-      title.classList.toggle('is-visible', progress >= titleThreshold);
+    let scale = scaleStart;
+    let originX = originXStart;
+    let activeReveal = -1;
+    let cursor = clearPoint;
+
+    for (let i = 0; i < reveals.length; i++) {
+      const stage = stages[i];
+      const rampEnd = cursor + rampRange;
+      if (scrolledIntoSection < rampEnd) {
+        const t = rampRange > 0 ? Math.max(0, Math.min(1, (scrolledIntoSection - cursor) / rampRange)) : 1;
+        if (stage.type === 'zoom') scale = lerp(scale, stage.value, t);
+        else originX = lerp(originX, stage.value, t);
+        break;
+      }
+      if (stage.type === 'zoom') scale = stage.value;
+      else originX = stage.value;
+
+      const isLast = i === reveals.length - 1;
+      const holdEnd = isLast ? Infinity : rampEnd + holdRange;
+      if (scrolledIntoSection < holdEnd) {
+        activeReveal = i;
+        break;
+      }
+      cursor = holdEnd;
     }
 
-    if (kicker) {
-      kicker.classList.toggle('is-visible', progress >= titleThreshold && progress < kickerFadeOutStart);
-    }
-
-    if (bgImg) {
-      const frame = focusAt(progress);
-      bgImg.style.transformOrigin = `${frame.x}% ${frame.y}%`;
-      bgImg.style.transform = `scale(${frame.scale})`;
-    }
-
-    ticking = false;
+    bgImg.style.transform = `scale(${scale})`;
+    bgImg.style.transformOrigin = `${originX}% ${originY}%`;
+    reveals.forEach((el, i) => el.classList.toggle('is-visible', i === activeReveal));
   }
 
-  window.addEventListener('scroll', () => {
-    if (!ticking) {
-      requestAnimationFrame(update);
-      ticking = true;
-    }
-  }, { passive: true });
-
+  onScrollFrame(update);
   window.addEventListener('resize', update);
-
   update();
+})();
+
+/* Promise: kicker, heading and the 3 feature entries fade/slide in the
+   first time the section scrolls into view. Plain IntersectionObserver
+   reveal — this section used to be a scroll-pinned background with a
+   JS-driven pan/zoom effect; replaced with a normal static section. */
+(function initPromiseReveal() {
+  const kicker = document.querySelector('.promise__kicker');
+  const title = document.querySelector('.promise .section-title');
+  const features = document.querySelectorAll('.promise__feature');
+  const revealables = [kicker, title, ...features].filter(Boolean);
+  if (!revealables.length) return;
+
+  if (prefersReducedMotion || !('IntersectionObserver' in window)) {
+    revealables.forEach((el) => el.classList.add('is-visible'));
+    return;
+  }
+
+  const observer = new IntersectionObserver((observed) => {
+    observed.forEach((item) => {
+      if (item.isIntersecting) {
+        item.target.classList.add('is-visible');
+        observer.unobserve(item.target);
+      }
+    });
+  }, { threshold: 0.2 });
+
+  revealables.forEach((el) => observer.observe(el));
+})();
+
+/* Product page: arrows step between products, and each product has its own
+   Whole/Cut toggle that swaps the photo. Switching product resets the
+   toggle back to "whole". */
+(function initProductSlideshow() {
+  const photo = document.getElementById('product-photo');
+  const name = document.getElementById('product-name');
+  const enquireLink = document.getElementById('product-enquire');
+  const toggleButtons = document.querySelectorAll('.product__toggle-btn');
+  const prevBtn = document.querySelector('.product__stage .arrow-btn--prev');
+  const nextBtn = document.querySelector('.product__stage .arrow-btn--next');
+  if (!photo || !toggleButtons.length || !prevBtn || !nextBtn) return;
+
+  const products = [
+    {
+      name: 'Free Range Chicken',
+      label: 'free-range chicken',
+      whole: { src: 'assets/product1.webp', alt: 'Whole free range chicken' },
+      cut: { src: 'assets/cut.webp', alt: 'Cut free range chicken' },
+    },
+    {
+      name: 'Capon Chicken',
+      label: 'capon chicken',
+      whole: { src: 'assets/capon.webp', alt: 'Whole capon chicken' },
+      cut: { src: 'assets/capon.webp', alt: 'Cut capon chicken' },
+    },
+  ];
+
+  let productIndex = 0;
+  let cut = 'whole';
+
+  function render() {
+    const product = products[productIndex];
+    const shot = product[cut];
+    photo.src = shot.src;
+    photo.alt = shot.alt;
+    if (name) name.textContent = product.name;
+    if (enquireLink) {
+      const cutLabel = cut === 'cut' ? 'pre-cut' : 'whole';
+      const message = `Hi, I am interested in ${cutLabel} ${product.label}. https://free-range-farm.com/products.html`;
+      enquireLink.href = `https://wa.me/60122295012?text=${encodeURIComponent(message)}`;
+    }
+    toggleButtons.forEach((btn) => btn.classList.toggle('is-active', btn.dataset.cut === cut));
+  }
+
+  toggleButtons.forEach((btn) => {
+    btn.addEventListener('click', () => {
+      cut = btn.dataset.cut;
+      render();
+    });
+  });
+
+  prevBtn.addEventListener('click', () => {
+    productIndex = cycleIndex(productIndex, -1, products.length);
+    cut = 'whole';
+    render();
+  });
+
+  nextBtn.addEventListener('click', () => {
+    productIndex = cycleIndex(productIndex, 1, products.length);
+    cut = 'whole';
+    render();
+  });
+
+  render();
 })();
 
 //FAQ

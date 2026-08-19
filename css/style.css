@@ -1,10 +1,15 @@
 :root {
   --color-bg: #fcf7ed;
+  --color-bg-rgb: 252, 247, 237; /* --color-bg, as r,g,b for rgba() use */
   --color-ink: #141210;
+  --color-ink-rgb: 20, 18, 16; /* --color-ink, as r,g,b for rgba() use */
   --color-olive: #7b7600;
   --color-footer: #C9B59C;
+  --color-footer-rgb: 201, 181, 156; /* --color-footer, as r,g,b for rgba() use */
   --color-tan: #d4b491;
   --color-brown: #987557;
+
+  --shadow-caption: 0 1px 6px rgba(0, 0, 0, 0.6);
 
   --font-display: 'Itim', cursive;
   --font-mono: 'JetBrains Mono', 'Iosevka Charon', ui-monospace, 'Courier New', monospace;
@@ -73,8 +78,33 @@ h1, h2, p { margin: 0; }
   padding-block: clamp(10px, 2vw, 20px);
   pointer-events: none;
 }
-.site-header .logo {
+.site-header__row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+}
+.site-header .logo,
+.nav-btn {
   pointer-events: auto;
+}
+
+.site-header__nav {
+  display: flex;
+  gap: clamp(0.5rem, 1.5vw, 1rem);
+}
+
+.nav-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: clamp(110px, 12vw, 160px);
+  aspect-ratio: 1200 / 793;
+  background: url('../assets/navigation.webp') no-repeat center / contain;
+  font-family: var(--font-mono);
+  font-size: var(--fs-body);
+  color: var(--color-ink);
+  text-decoration: none;
+  text-align: center;
 }
 
 .logo {
@@ -123,12 +153,15 @@ h1, h2, p { margin: 0; }
   z-index: 2;
 }
 
-/* Hover swap */
-.logo:hover .brown-logo {
+/* Hover swap — shared with .footer__logo, which reuses the same
+   .brown-logo/.yellow-logo classes */
+.logo:hover .brown-logo,
+.footer__logo:hover .brown-logo {
   opacity: 0;
 }
 
-.logo:hover .yellow-logo {
+.logo:hover .yellow-logo,
+.footer__logo:hover .yellow-logo {
   opacity: 1;
 }
 
@@ -192,7 +225,7 @@ h1, h2, p { margin: 0; }
   z-index: 1;
   width: clamp(70px, 9vw, 130px);
   aspect-ratio: 1 / 1;
-  background-image: url('../assets/footprint.png');
+  background-image: url('../assets/footprint.webp');
   background-size: contain;
   background-repeat: no-repeat;
   background-position: bottom left;
@@ -244,12 +277,8 @@ h1, h2, p { margin: 0; }
   font-size: var(--fs-hero);
   line-height: 1.1;
 }
-.intro__title-sub {
-  font-size: var(--fs-hero-sub) !important;
-}
-
-.intro__row {
-  display: contents;
+.intro__title span.intro__title-sub {
+  font-size: var(--fs-hero-sub);
 }
 
 /* badge + paragraph */
@@ -311,7 +340,7 @@ h1, h2, p { margin: 0; }
     align-items: center;
     column-gap: clamp(2rem, 5vw, 5rem);
   }
-  .intro__copy   { grid-column: 1; grid-row: 1s; }
+  .intro__copy   { grid-column: 1; grid-row: 1; }
   .intro__badge  { grid-column: 1; grid-row: 2; margin-inline: 0; }
   .intro__text   { grid-column: 2; grid-row: 1 / 3; max-width: 46ch; }
 }
@@ -321,16 +350,33 @@ h1, h2, p { margin: 0; }
 --------------------------------------------------- */
 .promise {
   position: relative;
-  height: 260vh;
+  /* the wave divider (z-index: 1) paints over the top/bottom edges of this
+     section's content; padding here needs to clear its full height
+     (clamp(70px, 11vw, 160px)) on both sides or the wave visually cuts
+     into the kicker/title above and the features below. */
+  padding-block: clamp(7rem, 14vw, 12rem);
   margin-top: clamp(-60px, -4vw, -24px);
   background-image: url('../assets/DP-22055-001.webp');
-  /* DP-22055-001.webp is a scan with a ~3% cream mat border on all sides;
-     plain "cover" lines its top/bottom edges up almost exactly with the
-     wave dividers, so the border shows through as a hard line. Sizing a
-     bit past cover pushes the border out of the visible frame. */
-  background-size: auto 116%;
+  /* cover, not auto-height: this used to be a 100vh+ pinned section, where
+     sizing off the height alone happened to fill the width too. Now that
+     it's a short, normal-flow section, that math instead renders a narrow
+     centered strip with cream bleeding on both sides — cover guarantees
+     full width/height coverage regardless of the section's aspect ratio. */
+  background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
+}
+.promise::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: rgba(var(--color-bg-rgb), 0.85);
+}
+.promise .wrap {
+  position: relative;
+  /* unlike other sections, let this one's content span the full viewport
+     width instead of capping at --content-max on wide screens. */
+  max-width: none;
 }
 .promise__divider-wrap {
   position: absolute;
@@ -361,100 +407,50 @@ h1, h2, p { margin: 0; }
 .promise__divider path {
   fill: var(--color-bg);
 }
-.promise__pin {
-  position: sticky;
-  top: 0;
-  height: 100vh;
-  display: flex;
-  align-items: center;
-  overflow: hidden;
-}
-.promise__scrim {
-  position: absolute;
-  inset: 0;
-  z-index: 0;
-  background: rgba(20, 18, 16, 0.35);
-  pointer-events: none;
-}
-.promise__bg {
-  position: absolute;
-  inset: 0;
-  z-index: 1;
-  overflow: hidden;
-  pointer-events: none;
-}
-.promise__bg-img {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
-  object-position: 32% 52%;
-  transform-origin: 50% 50%;
-  will-change: transform;
-  transition: transform 0.2s ease-out, transform-origin 0.2s ease-out;
-}
-.promise__pin .wrap {
-  position: relative;
-  z-index: 2;
-  width: 100%;
-}
 .promise__kicker {
-  position: absolute;
-  left: var(--side-pad);
-  bottom: clamp(1.5rem, 5vw, 3rem);
-  z-index: 2;
-  text-align: left;
-  color: #F7E7D7;
-  text-shadow: 0 1px 6px rgba(0, 0, 0, 0.6);
+  text-align: center;
   font-family: var(--font-mono);
-  font-size: clamp(0.75rem, 0.65rem + 0.4vw, 1rem);
   font-style: italic;
+  font-size: clamp(0.85rem, 0.75rem + 0.4vw, 1.1rem);
+  color: var(--color-brown);
+  margin-bottom: 0.6rem;
   opacity: 0;
-  pointer-events: none;
-  transition: opacity 0.8s ease;
-}
-.promise__kicker.is-visible {
-  opacity: 1;
+  transform: translateY(12px);
+  transition: opacity 0.5s ease-out, transform 0.5s ease-out;
 }
 .promise .section-title {
-  text-align: right;
-  margin-bottom: clamp(2.5rem, 8vw, 5.5rem);
-  color: #F7E7D7;
-  text-shadow: 0 1px 6px rgba(0, 0, 0, 0.6);
-  font-family: var(--font-mono);
-  font-size: clamp(0.95rem, 0.85rem + 0.6vw, 1.4rem);
-  font-style: italic;
+  margin-bottom: clamp(2rem, 6vw, 3.5rem);
   opacity: 0;
-  transition: opacity 0.8s ease;
+  transform: translateY(12px);
+  transition: opacity 0.5s ease-out, transform 0.5s ease-out;
 }
+.promise__kicker.is-visible,
 .promise .section-title.is-visible {
   opacity: 1;
+  transform: translateY(0);
 }
 
 .promise__features {
   display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  gap: clamp(1.5rem, 4vw, 2.5rem);
-  margin-left: auto;
-  max-width: 420px;
-  text-align: right;
-  color: #eddca4;
-  text-shadow: 0 1px 6px rgba(0, 0, 0, 0.6);
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: clamp(2rem, 5vw, 3.5rem);
 }
 .promise__feature {
   display: flex;
-  flex-direction: row-reverse;
+  flex-direction: column;
   align-items: center;
-  gap: clamp(1rem, 3vw, 1.75rem);
+  flex: 1 1 200px;
+  max-width: 280px;
+  gap: 0.75rem;
+  text-align: center;
   opacity: 0;
-  transform: translateX(48px);
-  transition: opacity 0.4s ease, transform 0.4s ease;
+  transform: translateY(24px);
+  transition: opacity 0.5s ease-out, transform 0.5s ease-out;
 }
 .promise__feature.is-visible {
   opacity: 1;
-  transform: translateX(0);
+  transform: translateY(0);
 }
 .promise__icon-wrap {
   display: flex;
@@ -463,6 +459,10 @@ h1, h2, p { margin: 0; }
   justify-content: center;
   width: clamp(70px, 7vw, 110px);
   height: clamp(70px, 7vw, 110px);
+  border-radius: 50%;
+  /* the icon art is gold-on-transparent, made for the old dark photo
+     backdrop; a solid chip keeps it legible on the now-light background. */
+  background: var(--color-brown);
 }
 .promise__feature img {
   width: clamp(46px, 5vw, 74px);
@@ -471,25 +471,11 @@ h1, h2, p { margin: 0; }
 .promise__feature p {
   font-family: var(--font-display);
   font-size: var(--fs-body);
-  max-width: 22ch;
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .promise {
-    height: auto;
-  }
-  .promise__pin {
-    position: static;
-    height: auto;
-    padding-block: clamp(3rem, 8vw, 6rem);
-  }
-  .promise__bg {
-    display: none;
-  }
   .promise__kicker,
-  .promise .section-title {
-    opacity: 1;
-  }
+  .promise .section-title,
   .promise__feature {
     opacity: 1;
     transform: none;
@@ -516,6 +502,13 @@ h1, h2, p { margin: 0; }
 .gallery__video-frame {
   position: sticky;
   top: 12vh;
+  /* .gallery__video-main is position: absolute so it doesn't participate
+     in flex layout, leaving the caption (the only in-flow child) as the
+     sole flex item — centering it vertically against the frame's height
+     (set to the video's height by initVideoFrameMorph.js), matching how
+     the slideshow below vertically centers its caption against its photo. */
+  display: flex;
+  align-items: center;
 }
 /* revealed once the video finishes growing (initVideoFrameMorph.js
    toggles .is-visible near the end of the scroll stage). Sits in
@@ -523,29 +516,25 @@ h1, h2, p { margin: 0; }
    (position: absolute) so it can grow/slide on the right independently
    of this column's own width. */
 .gallery__video-caption {
+  width: 100%;
   max-width: min(320px, 34%);
   display: flex;
   flex-direction: column;
+  align-items: center;
   gap: 0.6rem;
   opacity: 0;
   transform: translateY(12px);
   transition: opacity 0.4s ease-out, transform 0.4s ease-out;
 }
+/* JS sizes the outer element to the full space left of the video; shrinking
+   just the title/text within that and centering them (align-items above)
+   keeps the block from stretching edge-to-edge while nudging it inward. */
+.gallery__video-caption > * {
+  max-width: clamp(240px, 30vw, 380px);
+}
 .gallery__video-caption.is-visible {
   opacity: 1;
   transform: translateY(0);
-}
-.gallery__video-title {
-  font-family: 'IM Fell DW Pica SC', serif;
-  font-weight: 400;
-  font-size: clamp(1.4rem, 1.2rem + 1.2vw, 2.2rem);
-  line-height: 1.1;
-}
-.gallery__video-desc {
-  font-family: var(--font-display);
-  font-size: var(--fs-body);
-  line-height: 1.55;
-  text-align: justify;
 }
 /* width + left are driven by initVideoFrameMorph() in main.js, growing
    from a small centered square to a wider right-aligned block */
@@ -582,7 +571,7 @@ h1, h2, p { margin: 0; }
   justify-content: center;
   border: none;
   border-radius: 50%;
-  background: rgba(20, 18, 16, 0.55);
+  background: rgba(var(--color-ink-rgb), 0.55);
   color: #fff;
   font-size: clamp(1.1rem, 3vw, 1.5rem);
   cursor: pointer;
@@ -600,6 +589,7 @@ h1, h2, p { margin: 0; }
   .gallery__video-frame {
     display: flex;
     flex-direction: column;
+    align-items: stretch;
   }
   .gallery__video-main {
     position: static;
@@ -609,72 +599,15 @@ h1, h2, p { margin: 0; }
   .gallery__video-caption {
     order: 2;
     max-width: none;
+    align-items: stretch;
     margin-top: clamp(1rem, 4vw, 1.5rem);
+  }
+  .gallery__video-caption > * {
+    max-width: none;
   }
 }
 
-/* Pinned slide stage: the frame sticks in place while the user scrolls
-   through .gallery__stage's extra height. Cards are stacked in the same
-   slot (later cards painting over earlier ones, per normal DOM stacking
-   order) and each card after the first starts parked below the frame;
-   as its turn comes up it slides up over the previous card, covering it
-   in place — see initGalleryWipe() in main.js. */
-.gallery__stage {
-  position: relative;
-  height: 300vh;
-  margin-bottom: clamp(2rem, 5vw, 3.5rem);
-}
-.gallery__stage-frame {
-  position: sticky;
-  top: 12vh;
-  height: min(70vh, 560px);
-  overflow: hidden;
-}
-.gallery__grid {
-  position: relative;
-  height: 100%;
-}
-.gallery__item {
-  position: absolute;
-  inset: 0;
-  display: flex;
-  align-items: center;
-  gap: clamp(1.5rem, 4vw, 3rem);
-  background: var(--color-bg);
-  transform: translateY(100%);
-}
-.gallery__item:nth-child(even) {
-  flex-direction: row-reverse;
-}
-.gallery__photo-pin {
-  flex: 0 1 clamp(200px, 26vw, 320px);
-  height: 100%;
-}
-.gallery__photo {
-  position: relative;
-  width: 100%;
-  height: 100%;
-  margin: 0;
-  overflow: hidden;
-  background: var(--color-tan);
-}
-.gallery__photo img {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  display: block;
-}
-.gallery__caption {
-  flex: 1 1 380px;
-  display: flex;
-  flex-direction: column;
-  gap: 0.6rem;
-  max-height: 100%;
-  overflow-y: auto;
-}
+/* Shared by the video caption above and the photo slideshow below. */
 .gallery__title {
   font-family: 'IM Fell DW Pica SC', serif;
   font-weight: 400;
@@ -685,48 +618,236 @@ h1, h2, p { margin: 0; }
   font-family: var(--font-display);
   font-size: var(--fs-body);
   line-height: 1.55;
-  width: 100%;
   text-align: justify;
 }
 
+/* Photo slideshow: single photo + caption, stepped through with arrows —
+   same interaction pattern as .product__slideshow, just laid out
+   side-by-side instead of stacked since there's room for it here. Grid
+   (not flex) so the same 4 elements can be regrouped for the mobile
+   layout below without any wrapper markup: desktop keeps the prev arrow
+   next to the photo and the next arrow next to the caption, mobile
+   instead puts both arrows either side of the title. */
+.gallery__slideshow {
+  display: grid;
+  grid-template-columns: auto clamp(200px, 26vw, 320px) 1fr auto;
+  grid-template-areas: "prev photo caption next";
+  align-items: center;
+  gap: clamp(1rem, 3vw, 2rem);
+  margin-top: clamp(2rem, 5vw, 3rem);
+}
+.gallery__slideshow .arrow-btn--prev { grid-area: prev; }
+.gallery__slideshow .arrow-btn--next { grid-area: next; }
+.gallery__slide-photo {
+  grid-area: photo;
+  position: relative;
+  margin: 0;
+  aspect-ratio: 329 / 439;
+  overflow: hidden;
+}
+.gallery__slide-photo img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+.gallery__slide-caption {
+  grid-area: caption;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+/* Mobile-only tap-to-reveal: hidden entirely on desktop, where the
+   description already shows inline in .gallery__slide-caption. */
+.gallery__slide-overlay {
+  display: none;
+}
+
 @media (max-width: 700px) {
-  /* No headroom on a single narrow column to hold a photo, a title, and
-     a full paragraph inside a pinned viewport-height frame without
-     clipping, so the pin/slide is dropped in favor of the cards just
-     stacking in normal document flow (initGalleryWipe() also skips
-     wiring up the scroll listener at this width). */
-  .gallery__stage {
-    height: auto;
+  .gallery__slideshow {
+    grid-template-columns: auto 1fr auto;
+    grid-template-areas:
+      "photo photo photo"
+      "prev caption next";
   }
-  .gallery__stage-frame {
-    position: static;
-    height: auto;
-    overflow: visible;
+  .gallery__slide-photo {
+    cursor: pointer;
   }
-  .gallery__grid {
-    height: auto;
+  /* Title stays visible below the photo; the description moves onto the
+     photo itself as a tap-to-reveal overlay instead. */
+  .gallery__slide-caption .gallery__desc {
+    display: none;
+  }
+  .gallery__slide-overlay {
     display: flex;
-    flex-direction: column;
-    gap: clamp(1rem, 2vw, 1.5rem);
+    align-items: flex-end;
+    position: absolute;
+    inset: 0;
+    padding: 1rem;
+    /* on the narrowest phones the description can wrap past the photo's
+       own height; scroll rather than clip against the top edge */
+    overflow-y: auto;
+    background: linear-gradient(to top, rgba(var(--color-ink-rgb), 0.85) 0%, transparent 65%);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    pointer-events: none;
   }
-  .gallery__item,
-  .gallery__item:nth-child(even) {
-    position: static;
+  .gallery__slide-overlay.is-visible {
+    opacity: 1;
+    /* only interactive (scrollable) once shown; while hidden it shouldn't
+       intercept touches meant for the photo/arrows underneath */
+    pointer-events: auto;
+  }
+  .gallery__slide-overlay .gallery__desc {
+    display: block;
+    margin: 0;
+    color: #fff;
+  }
+}
+
+/* ---------------------------------------------------
+   Farm
+--------------------------------------------------- */
+/* Background photo stays pinned in the viewport (plain CSS position:
+   sticky — no risk of the rendering bugs the old pinned Gallery photos
+   had) while the section's content scrolls over it. .farm__pin, .wrap and
+   each .farm__reveal all share the same grid cell (stacked via grid-area)
+   so they overlap without negative-margin math; .farm's min-height gives
+   the sticky elements room to hold before they release. Sequence driven
+   by initFarmZoom() (main.js): content scrolls past -> still-pinned
+   background zooms in -> first photo pops in and holds -> it fades as the
+   background zooms in further -> second photo pops in and holds until the
+   section finally releases into the footer. */
+.farm {
+  position: relative;
+  display: grid;
+  min-height: 900vh;
+}
+.farm__pin {
+  grid-area: 1 / 1;
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  overflow: hidden;
+  z-index: 0;
+}
+.farm__bg-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  /* focus point: the white-roofed barn and its blue fence panel — both
+     the resting crop and the zoom converge here. */
+  object-position: 42% 27%;
+  transform-origin: 42% 27%;
+  display: block;
+  transform: scale(1);
+  will-change: transform;
+}
+.farm__scrim {
+  position: absolute;
+  inset: 0;
+  background: rgba(var(--color-bg-rgb), 0.7);
+}
+.farm .wrap {
+  grid-area: 1 / 1;
+  position: relative;
+  z-index: 1;
+  align-self: start;
+  padding-block: clamp(4rem, 10vw, 8rem);
+}
+.farm .section-title { margin-bottom: clamp(1rem, 3vw, 2rem); }
+.farm__text {
+  max-width: 900px;
+  margin-inline: auto;
+  font-family: var(--font-display);
+  font-size: var(--fs-body);
+  line-height: 1.6;
+  text-align: center;
+}
+
+/* Fades in over the pinned, fully-zoomed background once initFarmZoom()
+   (main.js) determines the zoom has finished — sticky like .farm__pin so
+   it holds in the viewport rather than being stuck at the top of the tall
+   grid cell. Unlike the old centered "intro" entry this replaced, it's a
+   plain left-aligned photo/text row — no need to center it. Each card
+   slides in from alternating sides (--left / --right, set by
+   initFarmZoom()) and fades back out to that same side, so consecutive
+   cards visibly cross in from opposite directions instead of just
+   popping in place. */
+.farm .wrap.farm__reveal {
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  padding-block: 0;
+  display: flex;
+  align-items: center;
+  gap: clamp(1.5rem, 4vw, 3rem);
+  opacity: 0;
+  transition: opacity 0.8s ease, transform 0.8s ease;
+  pointer-events: none;
+}
+.farm .wrap.farm__reveal.farm__reveal--left {
+  transform: translateX(-4%);
+}
+.farm .wrap.farm__reveal.farm__reveal--right {
+  transform: translateX(4%);
+}
+.farm .wrap.farm__reveal.is-visible {
+  opacity: 1;
+  transform: translateX(0);
+  pointer-events: auto;
+}
+.farm__reveal-photo {
+  flex: 1 1 0;
+  margin: 0;
+  max-width: 420px;
+  aspect-ratio: 4 / 3;
+  overflow: hidden;
+}
+.farm__reveal-photo img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+.farm__reveal-text {
+  flex: 1 1 0;
+}
+.farm__reveal-title {
+  font-family: 'IM Fell DW Pica SC', serif;
+  font-weight: 400;
+  font-size: clamp(1.4rem, 1.2rem + 1.2vw, 2.2rem);
+  line-height: 1.1;
+  margin-bottom: 0.6rem;
+}
+.farm__reveal-desc {
+  font-family: var(--font-display);
+  font-size: var(--fs-body);
+  line-height: 1.55;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .farm .wrap.farm__reveal {
+    transition: none;
     transform: none;
+  }
+}
+
+@media (max-width: 700px) {
+  .farm .wrap.farm__reveal {
     flex-direction: column;
-    align-items: stretch;
+    padding-block: clamp(1.5rem, 6vw, 3rem);
+    overflow-y: auto;
   }
-  .gallery__photo-pin {
-    flex-basis: auto;
-    height: auto;
-  }
-  .gallery__photo {
-    height: auto;
-    aspect-ratio: 329 / 439;
-  }
-  .gallery__caption {
-    max-height: none;
-    overflow-y: visible;
+  /* flex: 1 1 0 sizes the photo's width in the desktop row layout;
+     reinterpreted as a height constraint once flex-direction switches to
+     column here, it would otherwise collapse the photo to 0 height. */
+  .farm__reveal-photo {
+    flex: none;
+    max-width: 320px;
+    width: 100%;
   }
 }
 
@@ -736,33 +857,76 @@ h1, h2, p { margin: 0; }
 .product {
   padding-block: clamp(3rem, 8vw, 6rem);
 }
-.product__grid {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: clamp(1.5rem, 4vw, 3rem);
-  margin-top: clamp(2rem, 6vw, 3.5rem);
-}
-/* each photo is grouped with its own button so they stay paired when
-   stacked on narrow screens, instead of all photos then all buttons */
-.product__card {
+.product__slideshow {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: clamp(1.5rem, 4vw, 2.5rem);
+  gap: clamp(1.25rem, 3vw, 2rem);
   width: clamp(220px, 30vw, 360px);
+  margin: clamp(2rem, 6vw, 3.5rem) auto 0;
+}
+.product__stage {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  width: 100%;
 }
 .product__item {
   position: relative;
-  width: 100%;
+  flex: 1;
+  min-width: 0;
   aspect-ratio: 329 / 439;
   margin: 0;
   overflow: hidden;
 }
+.product__photo {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+/* Shared prev/next slideshow control — used by both .product__stage and
+   .gallery__slide-stage. */
+.arrow-btn {
+  flex: 0 0 auto;
+  width: 2.25rem;
+  height: 2.25rem;
+  border: 2px solid var(--color-brown);
+  border-radius: 50%;
+  background: var(--color-bg);
+  color: var(--color-brown);
+  font-size: 1.25rem;
+  line-height: 1;
+  cursor: pointer;
+  transition: background 0.2s ease, color 0.2s ease;
+}
+.arrow-btn:hover,
+.arrow-btn:focus-visible {
+  background: var(--color-brown);
+  color: #fff;
+}
+.product__name {
+  margin: 0;
+  font-family: var(--font-mono);
+  font-size: var(--fs-body);
+  color: var(--color-ink);
+  text-align: center;
+}
+.product__toggle {
+  display: flex;
+  gap: 0.75rem;
+  width: 100%;
+}
+.product__toggle-btn {
+  flex: 1;
+}
+.product__toggle-btn.is-active {
+  background: var(--color-brown);
+  color: #fff;
+}
 /* the <a> wrapping .product__btn is inline by default, so as a flex
    item under align-items: center it shrinks to the button's own text
-   width instead of the card's full width — force it to fill instead */
-.product__card > a {
+   width instead of the slideshow's full width — force it to fill instead */
+.product__slideshow > a {
   display: block;
   width: 100%;
 }
@@ -782,31 +946,6 @@ h1, h2, p { margin: 0; }
 .product__btn:focus-visible {
   background: var(--color-brown);
   color: #fff;
-}
-.product__photo {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-.product__overlay {
-  position: absolute;
-  inset: 0;
-  display: flex;
-  align-items: flex-end;
-  justify-content: center;
-  padding: 1rem;
-  text-align: center;
-  background: linear-gradient(to top, rgba(20, 18, 16, 0.75) 0%, transparent 65%);
-  color: #fff;
-  font-family: var(--font-mono);
-  font-size: var(--fs-body);
-  opacity: 0;
-  transition: opacity 0.3s ease;
-  pointer-events: none;
-}
-.product__item:hover .product__overlay,
-.product__item:focus-within .product__overlay {
-  opacity: 1;
 }
 
 /* ---------------------------------------------------
@@ -866,7 +1005,7 @@ h1, h2, p { margin: 0; }
 }
 .faq__answer-inner {
   overflow: hidden;
-  background: rgba(201, 181, 156, 0.5); /* --color-footer at lower opacity */
+  background: rgba(var(--color-footer-rgb), 0.5);
 }
 .faq__answer-inner p {
   margin: 0;
@@ -887,15 +1026,27 @@ h1, h2, p { margin: 0; }
   margin-top: clamp(3rem, 8vw, 6rem);
   padding-block: clamp(2.5rem, 6vw, 4.5rem);
 }
+/* The Farm section's pinned background already releases into plain page
+   background right at its own edge — this margin on top of that reads as
+   a second, redundant cream gap before the footer, so drop it here only. */
+main:has(> .farm) + .site-footer {
+  margin-top: 0;
+}
 .footer__info {
   display: flex;
   flex-wrap: wrap;
   align-items: flex-start;
-  gap: clamp(2rem, 5vw, 4rem);
+  justify-content: space-between;
+  gap: clamp(1.5rem, 3vw, 2.5rem);
   font-size: 0.8rem;
 }
 .footer__info-item--address {
   max-width: 320px;
+}
+.footer__info-pair {
+  display: flex;
+  align-items: flex-start;
+  gap: clamp(1.5rem, 3vw, 2.5rem);
 }
 .footer__brand {
   display: flex;
@@ -916,18 +1067,6 @@ h1, h2, p { margin: 0; }
   width: clamp(50px, 6vw, 100px);
   height: auto;
   transition: opacity 0.3s ease;
-}
-.footer__logo .yellow-logo {
-  position: absolute;
-  top: 0;
-  left: 0;
-  opacity: 0;
-}
-.footer__logo:hover .brown-logo {
-  opacity: 0;
-}
-.footer__logo:hover .yellow-logo {
-  opacity: 1;
 }
 .footer__company {
   font-family: var(--font-display);
@@ -984,3 +1123,20 @@ h1, h2, p { margin: 0; }
   text-decoration: none;
 }
 .footer__links a:hover { text-decoration: underline; }
+
+@media (max-width: 700px) {
+  /* At this width two short columns (e.g. Contact + Email) fit on the same
+     line and wrap unevenly next to the full-width ones above them —
+     forcing one column keeps every item's spacing consistent. */
+  .footer__info {
+    flex-direction: column;
+    gap: clamp(1.5rem, 5vw, 2rem);
+  }
+  .footer__info-pair {
+    align-self: stretch;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 1rem;
+  }
+}
