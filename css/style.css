@@ -710,20 +710,22 @@ h1, h2, p { margin: 0; }
 /* ---------------------------------------------------
    Farm
 --------------------------------------------------- */
-/* Background photo stays pinned in the viewport (plain CSS position:
-   sticky — no risk of the rendering bugs the old pinned Gallery photos
-   had) while the section's content scrolls over it. .farm__pin, .wrap and
-   each .farm__reveal all share the same grid cell (stacked via grid-area)
-   so they overlap without negative-margin math; .farm's min-height gives
-   the sticky elements room to hold before they release. Sequence driven
-   by initFarmZoom() (main.js): content scrolls past -> still-pinned
-   background zooms in -> first photo pops in and holds -> it fades as the
-   background zooms in further -> second photo pops in and holds until the
-   section finally releases into the footer. */
+/* One continuous pinned sequence (CSS position: sticky), driven by
+   initFarmSequence() (main.js) — no separate "newspaper" section handing
+   off to a separate "farm" section, so there's no seam to cross: the
+   newspaper poster sits still -> hops up and back down -> zooms in while
+   dissolving into the real farm.webp photo, then WITHOUT stopping keeps
+   using that same photo/transform for the rest of the sequence — the
+   "Farm" title fades in first, then each reveal card pops in as the
+   background continues zooming/panning, holding until the section finally
+   releases into the footer. .farm__pin, and each .wrap.farm__reveal all
+   share the same grid cell (stacked via grid-area) so they overlap without
+   negative-margin math; .farm's min-height gives the sticky elements room
+   to hold before they release. */
 .farm {
   position: relative;
   display: grid;
-  min-height: 900vh;
+  min-height: 1280vh;
 }
 .farm__pin {
   grid-area: 1 / 1;
@@ -732,51 +734,93 @@ h1, h2, p { margin: 0; }
   height: 100vh;
   overflow: hidden;
   z-index: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
-.farm__bg-img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  /* focus point: the white-roofed barn and its blue fence panel — both
-     the resting crop and the zoom converge here. */
-  object-position: 42% 27%;
-  transform-origin: 42% 27%;
-  display: block;
-  transform: scale(1);
+/* Shrink-wraps to .farm__paper-img's rendered size (native max-height/
+   width:auto sizing on the img itself), so .farm__bg-img below can be
+   positioned against it in percentages. Carries the scroll-driven
+   translate/rotate/scale transform for the entire sequence — both the
+   newspaper-flight phase AND every zoom/pan stage afterward — so the
+   photo never changes element or coordinate system underneath the
+   choreography. */
+.farm__stage {
+  position: relative;
+  display: inline-block;
+  /* The printed photo is a redraw of the exact same farm.webp used as
+     .farm__bg-img. This origin is the pixel-measured point within it that
+     matches farm.webp's own tuned focus point (the white-roofed barn and
+     blue fence panel), so the zoom phase lands on the same framing the
+     old standalone Farm background used to open on, and continuing to
+     zoom from here after the dissolve keeps converging on that same spot
+     instead of drifting to some arbitrary point on the page. */
+  transform-origin: 48.3% 50.2%;
   will-change: transform;
 }
+.farm__paper-img {
+  max-height: 82vh;
+  width: auto;
+  display: block;
+  box-shadow: 0 20px 60px rgba(var(--color-ink-rgb), 0.35);
+}
+/* Positioned over the exact sub-region of .farm__paper-img that shows the
+   printed farm photo (same pixel measurements as the stage's
+   transform-origin above). Starts invisible; initFarmSequence() fades it
+   in over the zoom phase so the illustration dissolves into this real,
+   full-color photo as the zoom lands. Once the dissolve finishes,
+   initFarmSequence() moves it out of .farm__stage and adds
+   .farm__bg-img--settled (below) so it becomes a plain full-bleed cover
+   image instead — staying inside the small absolutely-positioned box for
+   the rest of the (considerably further) zooming/panning ahead would
+   eventually pan past its own edges and expose blank space beneath it. */
+.farm__bg-img {
+  position: absolute;
+  left: 7.21%;
+  top: 33.3%;
+  width: 84.88%;
+  height: 33.7%;
+  object-fit: cover;
+  opacity: 0;
+  display: block;
+}
+.farm__bg-img--settled {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  /* focus point: the white-roofed barn and its blue fence panel — both
+     the settled resting crop and the further zoom/pan stages converge
+     here, matching where the dissolve landed. */
+  object-position: 42% 27%;
+}
+/* Darkens the photo once it's settled into being the plain Farm
+   background — kept at 0 through the bright newspaper-poster phase so
+   that part stays undarkened, then faded in alongside the color photo. */
 .farm__scrim {
   position: absolute;
   inset: 0;
-  background: rgba(var(--color-bg-rgb), 0.7);
+  background: rgba(var(--color-ink-rgb), 0.5);
+  opacity: 0;
 }
-.farm .wrap {
-  grid-area: 1 / 1;
-  position: relative;
-  z-index: 1;
-  align-self: start;
-  padding-block: clamp(4rem, 10vw, 8rem);
-}
-.farm .section-title { margin-bottom: clamp(1rem, 3vw, 2rem); }
-.farm__text {
-  max-width: 900px;
-  margin-inline: auto;
-  font-family: var(--font-display);
-  font-size: var(--fs-body);
-  line-height: 1.6;
-  text-align: center;
+/* The scrim above darkens the background photo, so all the reveal cards
+   (which sit over the same pinned photo) switch to light text with a
+   shadow for contrast, instead of the site's default dark ink. */
+.farm__reveal-title,
+.farm__reveal-desc {
+  color: #fff;
+  text-shadow: var(--shadow-caption);
 }
 
-/* Fades in over the pinned, fully-zoomed background once initFarmZoom()
-   (main.js) determines the zoom has finished — sticky like .farm__pin so
-   it holds in the viewport rather than being stuck at the top of the tall
-   grid cell. Unlike the old centered "intro" entry this replaced, it's a
-   plain left-aligned photo/text row — no need to center it. Each card
-   slides in from alternating sides (--left / --right, set by
-   initFarmZoom()) and fades back out to that same side, so consecutive
-   cards visibly cross in from opposite directions instead of just
-   popping in place. */
+/* Fades in over the pinned, still-zooming background once
+   initFarmSequence() (main.js) determines it's this card's turn — sticky
+   like .farm__pin so it holds in the viewport rather than being stuck at
+   the top of the tall grid cell. Each card slides in from alternating
+   sides (--left / --right, set by initFarmSequence()) and fades back out
+   to that same side, so consecutive cards visibly cross in from opposite
+   directions instead of just popping in place. */
 .farm .wrap.farm__reveal {
+  grid-area: 1 / 1;
   position: sticky;
   top: 0;
   height: 100vh;
@@ -792,6 +836,7 @@ h1, h2, p { margin: 0; }
   transform: translateX(-4%);
 }
 .farm .wrap.farm__reveal.farm__reveal--right {
+  flex-direction: row-reverse;
   transform: translateX(4%);
 }
 .farm .wrap.farm__reveal.is-visible {
@@ -836,7 +881,11 @@ h1, h2, p { margin: 0; }
 }
 
 @media (max-width: 700px) {
-  .farm .wrap.farm__reveal {
+  /* .farm__reveal--right's row-reverse (desktop, left/right alternation)
+     is more specific than the plain .farm__reveal rule below, so it needs
+     its own override here to fall back to a single column like the rest. */
+  .farm .wrap.farm__reveal,
+  .farm .wrap.farm__reveal.farm__reveal--right {
     flex-direction: column;
     padding-block: clamp(1.5rem, 6vw, 3rem);
     overflow-y: auto;

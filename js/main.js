@@ -317,27 +317,45 @@ initRotateOnScroll('.intro__badge-text', { degreesPerPixel: -0.15 });
   update();
 })();
 
-/* Farm background: pinned in place (CSS position: sticky) while the
-   title/description scroll over it. Once that content has fully scrolled
-   past — no more overlay left to read — continued scrolling drives the
-   still-pinned background through one "ramp" per .farm__reveal (each
-   either zooms further in, or — like the lake photo's stage — holds the
-   zoom and pans sideways instead), over a fixed distance (rampDuration).
-   Once a ramp finishes, that reveal pops in over the background and holds
-   for a fixed distance (holdDuration), then fades as the next ramp begins,
-   and so on, with the last reveal holding until the section finally
-   releases into the footer. clearPoint is the scroll distance (in
-   "distance scrolled into the section" units) at which the content's
-   bottom edge clears the viewport top; recomputed fresh each frame from
-   live rects rather than cached, but algebraically constant since content
-   moves 1:1 with scroll while the section itself is the thing being
-   measured against. */
-(function initFarmZoom() {
+/* Farm: one continuous pinned sequence (CSS position: sticky) — no
+   separate "newspaper" section handing off to a separate "farm" section,
+   so there's no seam for the two to visibly disagree across. Phases, in
+   scroll order:
+     1. hold   — the newspaper poster sits still, bright, undarkened.
+     2. flight — it hops up and back down (translateY/rotate wobble).
+     3. blend  — .farm__stage zooms in while .farm__bg-img (the real
+        farm.webp, absolutely positioned over the printed photo's exact
+        sub-region — see CSS) fades from 0 to full opacity and the scrim
+        fades in alongside it, landing on the exact crop farm.webp's own
+        tuned focus point sits at. blendScale is tuned (alongside
+        .farm__stage's transform-origin in CSS) so this lines up pixel-for-
+        pixel — the illustration dissolves into the real photo instead of
+        cutting to it.
+     4. settle — the instant the blend finishes, bgImg is moved out of
+        .farm__stage (whose transform stops applying to it) and switched
+        to a plain full-bleed cover image (.farm__bg-img--settled, CSS) at
+        the equivalent scale(1)/42%,27% framing — since that's pixel-
+        identical to where the blend just landed, the swap is invisible,
+        but it matters because the small absolutely-positioned box above
+        doesn't have enough margin to stay full-bleed once the reveal
+        stages below zoom/pan further — it would eventually expose blank
+        space past its own edge.
+     5. reveals — bgImg keeps zooming/panning through one "ramp" per
+        .farm__reveal, each holding for a fixed distance once its ramp
+        lands, then fading as the next ramp begins — one per photo card,
+        with the last one holding until the section finally releases into
+        the footer. */
+(function initFarmSequence() {
   const section = document.querySelector('.farm');
-  const wrap = section ? section.querySelector('.wrap') : null;
+  const pin = document.querySelector('.farm__pin');
+  const stage = document.querySelector('.farm__stage');
+  const paperImg = document.querySelector('.farm__paper-img');
   const bgImg = document.querySelector('.farm__bg-img');
+  const scrim = document.querySelector('.farm__scrim');
   let reveals = Array.from(document.querySelectorAll('.farm__reveal'));
-  if (!section || !wrap || !bgImg) return;
+  if (!section || !pin || !stage || !paperImg || !bgImg || !scrim || !reveals.length) return;
+
+  const blendScale = 3.65; // matches farm.webp's resting crop, see transform-origin comment in CSS
 
   // one entry per .farm__reveal, in order: what changes during that
   // reveal's ramp, and the value it lands on. Matched to `reveals` by
@@ -348,11 +366,11 @@ initRotateOnScroll('.intro__badge-text', { degreesPerPixel: -0.15 });
     { type: 'zoom', value: 1.25 },
     { type: 'zoom', value: 1.6 },
     { type: 'pan', value: 82 }, // stop zooming, pan the origin toward the right side of the photo
-    { type: 'zoom', value: 1 }, // zoom back out to the original resting size
+    { type: 'zoom', value: 1 }, // zoom back out to the resting size the blend landed on
   ];
 
   if (reveals.length > stages.length) {
-    console.warn(`initFarmZoom: ${reveals.length} .farm__reveal elements but only ${stages.length} stages defined — add a matching stages entry for each reveal. Extra reveals will never appear.`);
+    console.warn(`initFarmSequence: ${reveals.length} .farm__reveal elements but only ${stages.length} stages defined — add a matching stages entry for each reveal. Extra reveals will never appear.`);
     reveals = reveals.slice(0, stages.length);
   }
 
@@ -362,56 +380,109 @@ initRotateOnScroll('.intro__badge-text', { degreesPerPixel: -0.15 });
     el.classList.add(i % 2 === 0 ? 'farm__reveal--left' : 'farm__reveal--right');
   });
 
+  // Scrolling back up past blendEnd needs to reverse this (not just a
+  // one-way switch) — nudging the scrollbar, or scrolling back up to
+  // re-read something, is completely normal, and without this bgImg would
+  // get stuck full-bleed while the poster is still doing its hold/flight/
+  // blend animation above it.
+  function settle() {
+    pin.insertBefore(bgImg, scrim);
+    bgImg.classList.add('farm__bg-img--settled');
+  }
+  function unsettle() {
+    stage.appendChild(bgImg);
+    bgImg.classList.remove('farm__bg-img--settled');
+  }
+
   if (prefersReducedMotion) {
+    settle();
+    paperImg.style.opacity = 0;
+    bgImg.style.opacity = 1;
+    scrim.style.opacity = 1;
     reveals.forEach((el) => el.classList.add('is-visible'));
     return;
   }
 
-  const scaleStart = 1;
-  const originXStart = 42; // matches the CSS resting object-position/transform-origin
+  const holdDuration = 1; // fraction of viewport height the poster sits still
+  const flightDuration = 1; // fraction of viewport height it hops up and back down
+  const blendDuration = 1; // fraction of viewport height the zoom-and-dissolve takes
+  const flightHeight = 140; // px, how high it hops at the peak
+  const scaleStart = 1; // bgImg's own baseline once settled, matching .farm__bg-img--settled's scale(1) framing
+  const originXStart = 42; // matches .farm__bg-img--settled's resting object-position in CSS
   const originY = 27;
-  const rampDuration = 0.6; // fraction of viewport height each ramp takes
-  const holdDuration = 1.1; // fraction of viewport height each non-final reveal holds for
+  const rampDuration = 0.6; // fraction of viewport height each reveal's ramp takes
+  const holdDurationReveal = 1.1; // fraction of viewport height each non-final reveal holds for
+
+  let settled = false;
 
   function update() {
     const sectionRect = section.getBoundingClientRect();
-    const wrapRect = wrap.getBoundingClientRect();
     const pinRange = sectionRect.height - window.innerHeight;
     if (pinRange <= 0) return;
 
     const scrolledIntoSection = -sectionRect.top;
-    const clearPoint = scrolledIntoSection + wrapRect.bottom;
-    const rampRange = window.innerHeight * rampDuration;
-    const holdRange = window.innerHeight * holdDuration;
+    const vh = window.innerHeight;
+    const holdEnd = vh * holdDuration;
+    const flightEnd = holdEnd + vh * flightDuration;
+    const blendEnd = flightEnd + vh * blendDuration;
 
-    let scale = scaleStart;
-    let originX = originXStart;
+    const shouldBeSettled = scrolledIntoSection >= blendEnd;
+    if (shouldBeSettled !== settled) {
+      if (shouldBeSettled) settle(); else unsettle();
+      settled = shouldBeSettled;
+    }
+    // Defaults to -1 (nothing visible) so scrolling back up out of the
+    // reveals phase — or sitting in the hold/flight/blend phases above —
+    // clears every card; only the reveals branch below overrides it.
     let activeReveal = -1;
-    let cursor = clearPoint;
 
-    for (let i = 0; i < reveals.length; i++) {
-      const stage = stages[i];
-      const rampEnd = cursor + rampRange;
-      if (scrolledIntoSection < rampEnd) {
-        const t = rampRange > 0 ? Math.max(0, Math.min(1, (scrolledIntoSection - cursor) / rampRange)) : 1;
-        if (stage.type === 'zoom') scale = lerp(scale, stage.value, t);
-        else originX = lerp(originX, stage.value, t);
-        break;
-      }
-      if (stage.type === 'zoom') scale = stage.value;
-      else originX = stage.value;
+    if (scrolledIntoSection < holdEnd) {
+      // poster holds still.
+      stage.style.transform = 'translateY(0px) rotate(0deg) scale(1)';
+    } else if (scrolledIntoSection < flightEnd) {
+      const t = (scrolledIntoSection - holdEnd) / (flightEnd - holdEnd);
+      const translateY = -Math.sin(t * Math.PI) * flightHeight;
+      const rotate = Math.sin(t * Math.PI * 2) * 4;
+      stage.style.transform = `translateY(${translateY}px) rotate(${rotate}deg) scale(1)`;
+    } else if (scrolledIntoSection < blendEnd) {
+      const t = Math.max(0, Math.min(1, (scrolledIntoSection - flightEnd) / (blendEnd - flightEnd)));
+      const scale = lerp(1, blendScale, t);
+      stage.style.transform = `translateY(0px) rotate(0deg) scale(${scale})`;
+      paperImg.style.opacity = lerp(1, 0, t);
+      bgImg.style.opacity = lerp(0, 1, t);
+      scrim.style.opacity = lerp(0, 0.5, t);
+    } else {
+      let scale = scaleStart;
+      let originX = originXStart;
+      let cursor = blendEnd;
+      const rampRange = vh * rampDuration;
+      const holdRange = vh * holdDurationReveal;
 
-      const isLast = i === reveals.length - 1;
-      const holdEnd = isLast ? Infinity : rampEnd + holdRange;
-      if (scrolledIntoSection < holdEnd) {
-        activeReveal = i;
-        break;
+      for (let i = 0; i < reveals.length; i++) {
+        const revealStage = stages[i];
+        const rampEnd = cursor + rampRange;
+        if (scrolledIntoSection < rampEnd) {
+          const t = rampRange > 0 ? Math.max(0, Math.min(1, (scrolledIntoSection - cursor) / rampRange)) : 1;
+          if (revealStage.type === 'zoom') scale = lerp(scale, revealStage.value, t);
+          else originX = lerp(originX, revealStage.value, t);
+          break;
+        }
+        if (revealStage.type === 'zoom') scale = revealStage.value;
+        else originX = revealStage.value;
+
+        const isLast = i === reveals.length - 1;
+        const holdEndI = isLast ? Infinity : rampEnd + holdRange;
+        if (scrolledIntoSection < holdEndI) {
+          activeReveal = i;
+          break;
+        }
+        cursor = holdEndI;
       }
-      cursor = holdEnd;
+
+      bgImg.style.transform = `scale(${scale})`;
+      bgImg.style.transformOrigin = `${originX}% ${originY}%`;
     }
 
-    bgImg.style.transform = `scale(${scale})`;
-    bgImg.style.transformOrigin = `${originX}% ${originY}%`;
     reveals.forEach((el, i) => el.classList.toggle('is-visible', i === activeReveal));
   }
 
@@ -422,8 +493,7 @@ initRotateOnScroll('.intro__badge-text', { degreesPerPixel: -0.15 });
 
 /* Promise: kicker, heading and the 3 feature entries fade/slide in the
    first time the section scrolls into view. Plain IntersectionObserver
-   reveal — this section used to be a scroll-pinned background with a
-   JS-driven pan/zoom effect; replaced with a normal static section. */
+   reveal. */
 (function initPromiseReveal() {
   const kicker = document.querySelector('.promise__kicker');
   const title = document.querySelector('.promise .section-title');
