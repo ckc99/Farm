@@ -27,6 +27,34 @@ function onScrollFrame(fn) {
   }, { passive: true });
 }
 
+/* Smooth scrolling (Lenis, loaded via <script> before this file). It eases
+   toward the target scroll position via real window.scrollTo() calls each
+   frame, so window.scrollY / getBoundingClientRect() keep updating normally
+   — every scroll-driven module below (onScrollFrame, IntersectionObserver,
+   the sticky Farm pin) keeps working unmodified. Skipped for
+   prefers-reduced-motion, matching every other animation in this file. */
+(function initSmoothScroll() {
+  if (prefersReducedMotion || typeof Lenis === 'undefined') return;
+  const lenis = new Lenis();
+
+  function raf(time) {
+    lenis.raf(time);
+    requestAnimationFrame(raf);
+  }
+  requestAnimationFrame(raf);
+
+  // In-page anchor links (nav, footer) ease via Lenis instead of snapping
+  // instantly, so they match the feel of wheel-scrolling.
+  document.querySelectorAll('a[href^="#"]').forEach((link) => {
+    const target = document.getElementById(link.getAttribute('href').slice(1));
+    if (!target) return;
+    link.addEventListener('click', (e) => {
+      e.preventDefault();
+      lenis.scrollTo(target);
+    });
+  });
+})();
+
 /* Parallax: an element's rotation tracks page scroll. Shared by
    chicken-sketch.png and the "free range chicken" circular text around it,
    which spin at different rates in opposite directions. */
