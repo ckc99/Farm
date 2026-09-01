@@ -569,7 +569,6 @@ initRotateOnScroll('.intro__badge-text', { degreesPerPixel: -0.15 });
       name: 'Capon Chicken',
       label: 'capon chicken',
       whole: { src: 'assets/capon.webp', alt: 'Whole capon chicken' },
-      cut: { src: 'assets/capon.webp', alt: 'Cut capon chicken' },
     },
   ];
 
@@ -587,7 +586,14 @@ initRotateOnScroll('.intro__badge-text', { degreesPerPixel: -0.15 });
       const message = `Hi, I am interested in ${cutLabel} ${product.label}. https://free-range-farm.com/products.html`;
       enquireLink.href = `https://wa.me/60122295012?text=${encodeURIComponent(message)}`;
     }
-    toggleButtons.forEach((btn) => btn.classList.toggle('is-active', btn.dataset.cut === cut));
+    toggleButtons.forEach((btn) => {
+  // Hide Pre-Cut button for Capon Chicken
+  if (btn.dataset.cut === 'cut') {
+    btn.style.display = product.name === 'Capon Chicken' ? 'none' : '';
+  }
+
+  btn.classList.toggle('is-active', btn.dataset.cut === cut);
+});
   }
 
   toggleButtons.forEach((btn) => {
