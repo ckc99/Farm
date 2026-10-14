@@ -4,8 +4,8 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="color-scheme" content="only light">
-<title>Free Range Farm | Free Range Chicken | Capon Chicken</title>
-<meta name ="description" content="Free Range Farm — premium free-range and capon chicken farmed in Kampar, delivered fresh within the Klang area.">
+<title>Free Range Farm | Free Range &amp; Capon Chicken, Kampar Perak</title>
+<meta name="description" content="Free Range Farm rears free range and capon chicken in Kampar, Perak — slow-grown with room to roam and forage, vacuum-packed and delivered fresh across the Klang area.">
 <link rel="canonical" href="https://free-range-farm.com/">
 
 <meta property="og:type" content="website">
@@ -26,7 +26,7 @@
 <link rel="icon" type="image/x-icon" href="assets/globalicon.ico">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Itim&family=Italianno&family=IM+Fell+DW+Pica&family=IM+Fell+DW+Pica+SC&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=IM+Fell+DW+Pica+SC&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;0,8..60,700;1,8..60,400&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="css/style.css">
 
 <script type="application/ld+json">
@@ -39,6 +39,10 @@
   "image": "https://free-range-farm.com/assets/OGtag.png",
   "description": "Free Range Farm — premium free-range and capon chicken farmed in Kampar, delivered fresh within the Klang area.",
   "priceRange": "RM26-RM35/kg",
+  "sameAs": [
+    "https://www.instagram.com/freerange.farm/",
+    "https://www.facebook.com/FreeRangeFarmOfficial"
+  ],
   "email": "kchong026@gmail.com",
   "telephone": "+60122295012",
   "address": {
@@ -52,20 +56,19 @@
 }
 </script>
 
-<!-- Google tag (gtag.js) -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-S15Q10S40B"></script>
-<script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
-
-  gtag('config', 'G-S15Q10S40B');
-</script>
+<!-- Google Analytics is NOT loaded here any more. The tag used to run on
+     page load, which set its cookies before anyone had been asked. It is now
+     injected by js/main.js only after a visitor accepts in the cookie
+     banner. The measurement ID lives in GA_ID at the top of that file. -->
 </head>
 <body>
 
 <header class="site-header">
   <div class="wrap site-header__row">
+    <div class="site-header__nav site-header__nav--left">
+        <a href="#top" class="nav-btn" aria-current="page">Home</a>
+        <a href="our-farm.html" class="nav-btn">Our Farm</a>
+    </div>
     <a href="#top" class="logo">
       <span class="logo__rope" aria-hidden="true"></span>
       <span class="logo__badge">
@@ -73,184 +76,152 @@
         <img class="yellow-logo" src="assets/yellowlogo.png" alt="Free Range Farm logo">
       </span>
     </a>
-    <div class="site-header__nav">
-      <a href="#top" class="nav-btn">Home</a>
-      <a href="products.html" class="nav-btn">Products</a>
+    <div class="site-header__nav site-header__nav--right">
+        <a href="products.html" class="nav-btn">Products</a>
+        <a href="contact.html" class="nav-btn">Contact</a>
     </div>
   </div>
 </header>
 
 <main>
 
-  <!-- INTRO -->
+  <!-- HERO -->
   <section class="intro" id="top">
-    <img class="intro__bg" src="assets/promise-bg.webp" alt="free range farm background" aria-hidden="true">
-    <div class="wrap intro__grid">
-      <div class="intro__copy">
-        <h1 class="intro__title">
-          <span>Free Range</span>
-          <span class="intro__title-sub">Farm</span>
-        </h1>
-      </div>
+    <img class="intro__scene" src="assets/promise-bg.webp" alt="" aria-hidden="true"
+         width="1820" height="1582" fetchpriority="high">
+    <div class="wrap intro__stack">
+      <h1 class="intro__title">Free Range Farm</h1>
+      <p class="intro__tagline">
+        Every chicken roams freely across open pastures, every day.
+      </p>
+    </div>
+  </section>
 
-      <div class="intro__badge">
-        <svg class="intro__badge-text" viewBox="0 0 340 340" aria-hidden="true">
-          <defs>
-            <path
-              id="badgePath"
-              d=
-              "
-              M170,170
-              m-120,0
-              a120,120 0 1,1 240,0
-              a120,120 0 1,1 -240,0
-              "
-              fill="none"
-            />
-          </defs>
+  <!-- BANNER -->
+  <section class="banner">
+    <a class="banner__link wrap" href="our-farm.html">
+      <span class="banner__text">Learn more about our farm</span>
+      <span class="banner__arrow" aria-hidden="true">&rarr;</span>
+    </a>
+  </section>
 
-        <text>
-          <textPath
-            href="#badgePath"
-            startOffset="35%"
-            text-anchor="middle">
-            free range chicken
-          </textPath>
-        </text>
-        </svg>
+  <!-- PRODUCT -->
+  <section class="offer">
+    <div class="wrap offer__layout">
 
-      <img class="intro__badge-chicken"
-          src="assets/chicken-sketch.webp"
-          alt="Line drawing of a free range chicken">
-      </div>
-      
-      <div class="intro__text">
-        <p>
-          Welcome to Free Range Farm — proud producers of premium free-range and capon chicken, raised freely in open pastures at Kampar. We believe happy chickens make for the best quality, natural produce for your family.
+      <figure class="offer__media">
+        <img src="assets/product1.webp" alt="A whole free range chicken, vacuum packed and labelled"
+             width="1792" height="2390" loading="lazy">
+      </figure>
+
+      <div class="offer__body">
+        <p class="kicker">What we sell</p>
+        <h2 class="offer__title">Free Range Chicken</h2>
+        <p class="offer__text">
+          Taste the Free-Range Difference · Ready to Cook · Maximum Juiciness
         </p>
-        <div class="footprints" aria-hidden="true"></div>
+        <a class="link-more" href="products.html">See sizes and cuts &rarr;</a>
       </div>
 
-      </div>
+    </div>
   </section>
 
   <!-- PROMISE -->
   <section class="promise" id="promise">
-    <div class="promise__divider-wrap promise__divider-wrap--top">
-      <svg class="promise__divider" viewBox="0 45.36 2880 69.28" preserveAspectRatio="none" aria-hidden="true">
-        <path d="M0,80 C180,140 180,20 360,80 C540,140 540,20 720,80 C900,140 900,20 1080,80 C1260,140 1260,20 1440,80 C1620,140 1620,20 1800,80 C1980,140 1980,20 2160,80 C2340,140 2340,20 2520,80 C2700,140 2700,20 2880,80 L2880,0 L0,0 Z" />
-      </svg>
-    </div>
-    <div class="promise__divider-wrap promise__divider-wrap--bottom">
-      <svg class="promise__divider" viewBox="0 45.36 2880 69.28" preserveAspectRatio="none" aria-hidden="true">
-        <path d="M0,80 C180,140 180,20 360,80 C540,140 540,20 720,80 C900,140 900,20 1080,80 C1260,140 1260,20 1440,80 C1620,140 1620,20 1800,80 C1980,140 1980,20 2160,80 C2340,140 2340,20 2520,80 C2700,140 2700,20 2880,80 L2880,0 L0,0 Z" />
-      </svg>
-    </div>
-    <div class="wrap">
-      <p class="promise__kicker">free range chicken</p>
-      <h2 class="section-title section-title--center">We Promise</h2>
+    <div class="wrap promise__layout">
 
-      <div class="promise__features">
-        <div class="promise__feature">
-          <span class="promise__icon-wrap"><img src="assets/icon-nature.webp" alt=""></span>
-          <p>Raised naturally</p>
-        </div>
-        <div class="promise__feature">
-          <span class="promise__icon-wrap"><img src="assets/icon-drumstick.webp" alt=""></span>
-          <p>Premium meat quality</p>
-        </div>
-        <div class="promise__feature">
-          <span class="promise__icon-wrap"><img src="assets/icon-leaf.webp" alt=""></span>
-          <p>Free of antibiotics and artificial additives</p>
-        </div>
+      <div class="promise__intro">
+        <p class="promise__kicker">free range chicken</p>
+        <img class="promise__avatar" src="assets/c-avatar.png" alt="" aria-hidden="true"
+             width="234" height="234" loading="lazy">
+        <h2 class="promise__title">We Promise</h2>
+        <p class="promise__text">
+          A bird that lives well simply tastes better. Room to roam, time to grow at
+          its own pace and food it forages for itself build firmer muscle and a
+          cleaner flavour &mdash; which is why we keep our flock the way we do.
+        </p>
       </div>
+
+      <ul class="promise__list">
+        <li class="promise__item">
+          <span class="promise__marker"><img src="assets/icon-nature.webp" alt="" aria-hidden="true"></span>
+          <div class="promise__item-body">
+            <p class="promise__item-text">Raised naturally</p>
+            <p class="promise__item-desc">A semi-enclosed house opening onto open ground, so the flock can shelter, roam and forage as it chooses.</p>
+          </div>
+        </li>
+        <li class="promise__item">
+          <span class="promise__marker"><img src="assets/icon-drumstick.webp" alt="" aria-hidden="true"></span>
+          <div class="promise__item-body">
+            <p class="promise__item-text">Premium meat quality</p>
+            <p class="promise__item-desc">More than eighty days to grow, at the bird&rsquo;s own pace. That longer time is what builds finer breast fibre and a firmer, juicier bite.</p>
+          </div>
+        </li>
+        <li class="promise__item">
+          <span class="promise__marker"><img src="assets/icon-leaf.webp" alt="" aria-hidden="true"></span>
+          <div class="promise__item-body">
+            <p class="promise__item-text">Free of antibiotics and artificial additives</p>
+            <p class="promise__item-desc">Birds given room and time stay healthier on their own, so there is nothing to prop up.</p>
+          </div>
+        </li>
+      </ul>
+
     </div>
   </section>
 
-  <!-- GALLERY -->
-  <section class="gallery" id="gallery">
+  <!-- JOURNAL -->
+  <!-- Horizontal card rail of short notes about chicken, each linking to its
+       own page. One card for now, so nothing overflows and the row does not
+       scroll yet; it starts scrolling on its own as soon as a second is
+       added. To add one, copy the <li> block, point the link at a new
+       blogN.html and add that page to sitemap.xml. -->
+  <section class="journal" id="journal">
     <div class="wrap">
-      <h2 class="section-title section-title--center">Gallery</h2>
-      <div class="gallery__video-stage" id="gallery-chicken-running">
-        <div class="gallery__video-frame">
-          <div class="gallery__video-caption">
-            <h3 class="gallery__title">"Raised to Roam Freely"</h3>
-            <p class="gallery__desc">We believe that a FREE Chicken makes the best Chicken. Allowing the chickens to engage in natural behaviors helps reduce their stress level and result in overall healthier birds!</p>
-          </div>
-          <div class="gallery__video-main">
-            <div class="gallery__video-box">
-              <video class="gallery__video" src="assets/chicks.webm" poster="assets/chicks-poster.webp" autoplay muted loop playsinline preload="metadata"></video>
-              <button type="button" class="gallery__video-play" aria-label="Play video">▶</button>
-            </div>
-          </div>
-        </div>
-      </div>
+      <p class="kicker kicker--light">Good to know</p>
+      <h2 class="journal__heading">More About Chicken</h2>
+    </div>
 
-      <div class="gallery__slideshow">
-        <button type="button" class="arrow-btn arrow-btn--prev" aria-label="Previous photo">‹</button>
-        <figure class="gallery__slide-photo">
-          <img id="gallery-slide-img" src="assets/gallery-1.webp" alt="Foraging for better nutrition">
-          <div class="gallery__slide-overlay" id="gallery-slide-overlay">
-            <p class="gallery__desc" id="gallery-slide-overlay-desc">Our free range chickens have access to the outdoors and hence are able to forage naturally on insects, seeds, and plants. Studies have shown that combined with increased activity, free-range chickens generally have higher levels of omega-3 fatty acids, which helps support heart health, reduce inflammation, and benefit brain function, compared to conventionally raised chickens. Also due to their active movement, free-range chicken breasts generally have significantly less saturated fat and hence are more tender and healthier.</p>
-          </div>
-        </figure>
-        <div class="gallery__slide-caption">
-          <h3 class="gallery__title" id="gallery-slide-title">"Foraging for Better Nutrition"</h3>
-          <p class="gallery__desc" id="gallery-slide-desc">Our free range chickens have access to the outdoors and hence are able to forage naturally on insects, seeds, and plants. Studies have shown that combined with increased activity, free-range chickens generally have higher levels of omega-3 fatty acids, which helps support heart health, reduce inflammation, and benefit brain function, compared to conventionally raised chickens. Also due to their active movement, free-range chicken breasts generally have significantly less saturated fat and hence are more tender and healthier.</p>
-        </div>
-        <button type="button" class="arrow-btn arrow-btn--next" aria-label="Next photo">›</button>
-      </div>
+    <!-- No tabindex: every card now holds a link, so tabbing through them
+         scrolls the strip and the container needs no focus stop of its own.
+         If a card without a link is ever added, tabindex="0" has to come
+         back or keyboard users cannot scroll this at all.
+         data-lenis-prevent hands wheel and touch over the strip back to the
+         browser — Lenis otherwise swallows the sideways scroll. -->
+    <div class="journal__rail"
+         role="group"
+         aria-label="Notes about chicken — scroll sideways for more"
+         data-lenis-prevent>
+      <ul class="journal__track">
+
+        <li class="journal__card">
+          <p class="journal__tag">Rearing</p>
+          <h3 class="journal__title">
+            <a class="journal__link" href="blog1.html">Why slow growing matters</a>
+          </h3>
+          <p class="journal__text">
+            A commercial broiler is pushed to weight as fast as feed allows. Ours take
+            their time, and those extra weeks on their feet are what put the firmer,
+            chewier bite into the meat.
+          </p>
+          <p class="journal__more" aria-hidden="true">Read more &rarr;</p>
+        </li>
+
+      </ul>
     </div>
   </section>
 
-  <!-- FARM -->
-  <section class="farm" id="farm">
-    <div class="farm__pin" aria-hidden="true">
-      <div class="farm__stage">
-        <img class="farm__paper-img" src="assets/newspaper.webp" alt="">
-        <img class="farm__bg-img" src="assets/farm.webp" alt="">
-      </div>
-      <div class="farm__scrim"></div>
-    </div>
+  <!-- PRIMER -->
+  <section class="primer">
+    <div class="wrap">
+      <p class="primer__text" data-reveal>
+        A bird free to go outdoors and forage for its own food, rather than living its
+        whole life inside a shed. Grown slowly rather than fast &mdash; which is what
+        gives the meat its firmer, juicier bite.
+      </p>
 
-    <div class="wrap farm__reveal">
-      <figure class="farm__reveal-photo">
-        <img src="assets/semi-enclosed.webp" alt="Semi-enclosed chicken run">
-      </figure>
-      <div class="farm__reveal-text">
-        <h3 class="farm__reveal-title">Semi-Enclosed Living Space</h3>
-        <p class="farm__reveal-desc">Our free range chickens are raised within a semi-enclosed poultry house, which is a combination of an enclosed poultry house and an outdoor activity space. While the enclosed poultry house provides a well-equipped and shaded environment for the chicken to grow, the outdoor space allows the chickens to roam, to forage, and to enjoy the taste of freedom. Because of the ability to roam, the chickens develop a more chewy muscle texture with lower fat content.</p>
-      </div>
-    </div>
+      <h2 class="primer__heading" data-reveal>What is free range chicken?</h2>
 
-    <div class="wrap farm__reveal">
-      <figure class="farm__reveal-photo">
-        <img src="assets/squuze.webp" alt="Chickens feeding together">
-      </figure>
-      <div class="farm__reveal-text">
-        <h3 class="farm__reveal-title">Free Space</h3>
-        <p class="farm__reveal-desc">As our farm takes the animal wellbeing as our very first priority, we don’t squeeze our chickens within the coop the way common commercial broiler farms do. By allowing the chickens to have enough space to breathe, our chickens are naturally healthier and hence avoid much of the common diseases.</p>
-      </div>
-    </div>
-
-    <div class="wrap farm__reveal">
-      <figure class="farm__reveal-photo">
-        <img src="assets/lake.webp" alt="The water-circulating lake beside the farm">
-      </figure>
-      <div class="farm__reveal-text">
-        <h3 class="farm__reveal-title">Beside the Lake</h3>
-        <p class="farm__reveal-desc">The vast lake in our farm has well-circulating water sourced directly from the surrounding mountains. This source of clean natural water provides our chickens the ability to enjoy the daily necessities in their most natural form.</p>
-      </div>
-    </div>
-
-    <div class="wrap farm__reveal">
-      <figure class="farm__reveal-photo">
-        <img src="assets/feed.webp" alt="Chickens gathered around a feeder">
-      </figure>
-      <div class="farm__reveal-text">
-        <h3 class="farm__reveal-title">Feeding</h3>
-        <p class="farm__reveal-desc">Last but not least, we feed our chickens with well-formulated self-made feed. While this is in contradiction with being natural, feeding of commercial feed ensures the chickens have enough nutrients to grow across their lifetime. Along with their freedom to forage outdoors, this creates a balanced diet between foraged foods and high-nutrient feed.</p>
-      </div>
+      <a class="link-more" href="our-farm.html" data-reveal>How we rear ours &rarr;</a>
     </div>
   </section>
 
@@ -259,52 +230,53 @@
 <!-- FOOTER -->
 <footer class="site-footer">
   <div class="wrap">
-    <div class="footer__brand">
-      <p class="footer__info">Produced and Farmed by</p>
-      <div class="footer__brand-row">
-        <a href="#top" class="footer__logo">
+
+    <div class="footer__top">
+
+      <div class="footer__brand">
+        <a href="index.html#top" class="footer__logo">
           <img class="brown-logo" src="assets/brownlogo.png" alt="Free Range Farm">
           <img class="yellow-logo" src="assets/yellowlogo.png" alt="Free Range Farm">
         </a>
-        <p class="footer__company">Agri Agrobusiness Sdn. Bhd.</p>
-      </div>
-    </div>
-
-    <div class="footer__info">
-      <div class="footer__info-item">
-        <p class="footer__label">Explore:</p>
-        <nav class="footer__links" aria-label="Section links">
-          <a href="#top">Intro</a>
-          <a href="#promise">Promise</a>
-          <a href="#gallery">Gallery</a>
-          <a href="#farm">Farm</a>
-        </nav>
+        <p class="footer__company">Agri Agrobusiness<br>Sdn. Bhd.</p>
       </div>
 
-      <div class="footer__info-pair">
-        <div class="footer__info-item">
-          <p class="footer__label">Contact:</p>
-          <p class="footer__value footer__value--contact">
-            <span class="footer__contact-name">Mr. Chong</span>
-            <span class="footer__contact-row">
-              <img class="footer__whatsapp-icon" src="assets/w-icon.png" alt="WhatsApp">
-              <a href="https://wa.me/60122295012" class="footer__whatsapp-link" target="_blank" rel="noopener">012-2295012</a>
-            </span>
-          </p>
-        </div>
+      <nav class="footer__col" aria-label="Pages">
+        <p class="footer__label">Explore</p>
+        <ul>
+          <li><a href="index.html#top">Home</a></li>
+          <li><a href="our-farm.html">Our Farm</a></li>
+          <li><a href="products.html">Products</a></li>
+          <li><a href="contact.html">Contact</a></li>
+          <li><a href="privacy.html">Privacy Policy</a></li>
+        </ul>
+      </nav>
 
-        <div class="footer__info-item">
-          <p class="footer__label">Email:</p>
-          <p class="footer__value">kchong026@gmail.com</p>
-        </div>
-      </div>
+      <div class="footer__col footer__col--reach">
+        <p class="footer__label">Orders &amp; Enquiries</p>
+        <p class="footer__contact">
+          <span class="footer__contact-name">Mr. Chong</span>
+          <span class="footer__contact-row">
+            <img class="footer__whatsapp-icon" src="assets/w-icon.webp" alt="" aria-hidden="true">
+            <a href="https://wa.me/60122295012" target="_blank" rel="noopener">012-2295012</a>
+          </span>
+          <a href="mailto:kchong026@gmail.com">kchong026@gmail.com</a>
+        </p>
 
-      <div class="footer__info-item footer__info-item--address">
-        <p class="footer__label">Address:</p>
-        <p class="footer__value">53, Lorong Sanggul 1D, Bandar Puteri, 41200 Klang, Selangor, Malaysia.</p>
+        <p class="footer__label footer__label--follow">Follow</p>
+        <ul class="footer__social">
+          <li><a href="https://www.instagram.com/freerange.farm/" target="_blank" rel="noopener">Instagram</a></li>
+          <li><a href="https://www.facebook.com/FreeRangeFarmOfficial" target="_blank" rel="noopener">Facebook</a></li>
+        </ul>
       </div>
 
     </div>
+
+    <div class="footer__bar">
+      <p class="footer__legal">&copy; 2026 Free Range Farm &middot; Agri Agrobusiness Sdn. Bhd.</p>
+      <p class="footer__address">53, Lorong Sanggul 1D, Bandar Puteri, 41200 Klang, Selangor, Malaysia</p>
+    </div>
+
   </div>
 </footer>
 

@@ -4,28 +4,65 @@
   --color-ink: #141210;
   --color-ink-rgb: 20, 18, 16; /* --color-ink, as r,g,b for rgba() use */
   --color-olive: #7b7600;
-  --color-footer: #C9B59C;
-  --color-footer-rgb: 201, 181, 156; /* --color-footer, as r,g,b for rgba() use */
+  --color-footer: #D6CEC2;
+  --color-footer-rgb: 214, 206, 194; /* --color-footer, as r,g,b for rgba() use */
   --color-tan: #d4b491;
   --color-brown: #987557;
+  /* --color-brown darkened for the card panels. The base brown carries
+     cream text at only 3.92:1, under the 4.5:1 AA floor; this sits at
+     5.59:1 with headroom rather than scraping past. */
+  --color-brown-deep: #7A5E46;
+  --color-brown-rgb: 152, 117, 87; /* --color-brown, as r,g,b for rgba() use */
+  --color-promo: #4F490D;
+  --color-promo-rgb: 79, 73, 13; /* --color-promo, as r,g,b for rgba() use */
 
   --shadow-caption: 0 1px 6px rgba(0, 0, 0, 0.6);
 
-  --font-display: 'Itim', cursive;
-  --font-mono: 'JetBrains Mono', 'Iosevka Charon', ui-monospace, 'Courier New', monospace;
-  --font-script: 'Italianno', cursive;
+  /* Two families, one job each — the whole site. IM Fell sets the headings
+     and the intro badge stamp; Source Serif 4 carries every piece of
+     running text. Source Serif 4 is a variable font with an optical-size
+     axis (opsz 8..60), so the browser adjusts contrast and spacing to the
+     rendered size on its own — worth keeping in mind before hand-tuning
+     anything typographic. */
+  --font-heading: 'IM Fell DW Pica SC', Georgia, serif;
+  --font-body: 'Source Serif 4', Georgia, 'Times New Roman', serif;
+
+  /* Height .site-header actually occupies. It is position: absolute and
+     so out of flow, which means every first-on-page section has to
+     reserve room for it by hand. Below 600px the header STACKS — logo
+     over links — and becomes taller than the single-row desktop header,
+     so a plain clamp() with a 7rem floor under-reserved on phones and the
+     nav landed on top of the page's first line. Measured, with headroom:
+     127-138px stacked, 84-145px in one row. */
+  --header-h: 140px;
 
   --content-max: 1493px;
   --side-pad: clamp(20px, 8vw, 176px);
 
-  --fs-hero: clamp(2.6rem, 3.4rem + 2vw, 6rem);
-  --fs-hero-sub: clamp(1.9rem, 2.4rem + 1vw, 4.375rem);
+  /* Retuned when the h1 went from two stacked words to one row. The old
+     curves were clamp(2.6rem, 3.4rem + 2vw, 6rem) / clamp(1.9rem, 2.4rem
+     + 1vw, 4.375rem), whose preferred terms never fell below 3.4rem and
+     2.4rem — the lower bounds were unreachable, so a phone still rendered
+     the hero at ~62px. That was fine for "Free Range" over "Farm", but
+     "Free Range Farm" on a single line needs roughly 7x the type size in
+     width and would overflow a 360px screen — and .intro has
+     overflow: hidden, so it would clip rather than wrap.
+     A lower intercept with a steeper vw slope reaches the same 6rem
+     ceiling on desktop while actually scaling down on small screens. The
+     two keep a constant ~0.74 ratio so the size relationship between the
+     words holds at every width. */
+  --fs-hero: clamp(2.2rem, 1.2rem + 5.3vw, 6rem);
+  --fs-hero-sub: clamp(1.6rem, 0.9rem + 3.9vw, 4.375rem);
   --fs-h2: clamp(2.4rem, 2.6rem + 2.6vw, 6rem);
   --fs-body: clamp(1.05rem, 1rem + 0.5vw, 1.2rem);
   --fs-faq-q: clamp(1rem, 0.9rem + 0.5vw, 1.6rem);
   --fs-faq-icon: clamp(1.75rem, 1.5rem + 1.5vw, 4rem);
   --fs-footer-label: clamp(0.9rem, 0.8rem + 0.8vw, 2rem);
   --fs-footer-value: clamp(0.75rem, 0.7rem + 0.5vw, 1.8rem);
+}
+
+@media (min-width: 600px) {
+  :root { --header-h: clamp(100px, 4rem + 5.4vw, 160px); }
 }
 
 /* ---------------------------------------------------
@@ -43,7 +80,7 @@ body {
   margin: 0;
   background: var(--color-bg);
   color: var(--color-ink);
-  font-family: var(--font-mono);
+  font-family: var(--font-body);
   line-height: 1.5;
   -webkit-font-smoothing: antialiased;
 }
@@ -59,7 +96,7 @@ h1, h2, p { margin: 0; }
 }
 
 .section-title {
-  font-family: 'IM Fell DW Pica SC', serif;
+  font-family: var(--font-heading);
   font-size: var(--fs-h2);
   font-weight: 400;
   line-height: 1.1;
@@ -78,10 +115,78 @@ h1, h2, p { margin: 0; }
   padding-block: clamp(10px, 2vw, 20px);
   pointer-events: none;
 }
+/* Grid, not flex, specifically so the logo lands dead centre of the
+   viewport. The nav is split 2 | 2 (Home and Our Farm on the left, Products
+   and Contact on the right), so the two sides still differ in width — under
+   `justify-content: space-between` the logo would settle at the midpoint
+   of the leftover space and sit visibly off-centre, drifting further as
+   the labels change. Equal 1fr side tracks pin the centre column to the
+   true middle no matter what the sides contain. */
 .site-header__row {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: start;
+  column-gap: clamp(0.5rem, 2vw, 1.5rem);
+}
+/* Centred within their own side tracks rather than pushed out to the page
+   edges. With justify-self: start/end the links sat hard against the
+   gutters and left a wide empty span either side of the logo; centring
+   them in each 1fr track spaces the two groups and the logo roughly evenly
+   across the bar, which is how the reference reads. */
+.site-header__nav--left { justify-self: center; }
+.site-header__nav--right { justify-self: center; }
+.site-header__row .logo { justify-self: center; }
+
+/* Stack to logo-over-links once the row stops fitting. This used to break
+   at 799px, when each link was a 110-160px sign graphic; as plain text
+   they are roughly a third narrower, so the single row now holds down to
+   around 500px and stacking at 799 would collapse the layout while it
+   still fits comfortably. 599px is set off estimated text widths, not
+   measured ones — worth checking against the real rendering.
+   The logo spans both columns on row 1; the two nav groups meet in the
+   middle of row 2 so the four links read as one centred row. */
+@media (max-width: 599px) {
+  .site-header__row {
+    grid-template-columns: auto auto;
+    justify-content: center;
+    row-gap: clamp(0.5rem, 2vw, 1rem);
+  }
+  .site-header__row .logo {
+    grid-column: 1 / -1;
+    grid-row: 1;
+  }
+  .site-header__nav--left {
+    grid-column: 1;
+    grid-row: 2;
+    justify-self: end;
+  }
+  .site-header__nav--right {
+    grid-column: 2;
+    grid-row: 2;
+    justify-self: start;
+  }
+}
+
+/* Phones. Four links will not fit on one row at any common phone width
+   (360-430px leaves only ~300-360px of usable line), so the two nav
+   groups each take their own row under the logo: Home / Our Farm, then
+   Products / Contact. The header grows by one link row (~40px) plus a
+   row-gap, so --header-h is raised to match — every first-on-page section
+   reserves its clearance from that variable, and under-reserving is what
+   put the nav on top of the page's first line before. */
+@media (max-width: 479px) {
+  :root { --header-h: 192px; }
+
+  .site-header__row {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .site-header__nav--left,
+  .site-header__nav--right {
+    grid-column: 1;
+    justify-self: center;
+  }
+  .site-header__nav--left { grid-row: 2; }
+  .site-header__nav--right { grid-row: 3; }
 }
 .site-header .logo,
 .nav-btn {
@@ -90,21 +195,57 @@ h1, h2, p { margin: 0; }
 
 .site-header__nav {
   display: flex;
-  gap: clamp(0.5rem, 1.5vw, 1rem);
+  gap: clamp(1rem, 3vw, 2.5rem);
 }
 
+/* The page you are already on. Driven by aria-current="page" in the markup
+   rather than a per-page CSS class, so the accessible state and the visual
+   state can never drift apart. */
+.nav-btn[aria-current="page"] {
+  font-weight: 700;
+}
+
+/* Plain text links. The fixed width and aspect-ratio: 1200 / 793 that used
+   to live here were not layout choices — they were the pixel dimensions of
+   the navigation.webp sign graphic this used to be painted with. With the
+   image gone they would just reserve an empty 160x106 box per link and
+   strand the label in the middle of it, so they came out together with the
+   background. */
 .nav-btn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: clamp(110px, 12vw, 160px);
-  aspect-ratio: 1200 / 793;
-  background: url('../assets/navigation.webp') no-repeat center / contain;
-  font-family: var(--font-mono);
+  padding: 0.35em 0.8em;
+  font-family: var(--font-body);
   font-size: var(--fs-body);
   color: var(--color-ink);
   text-decoration: none;
   text-align: center;
+}
+/* The sign graphic was the only thing marking these as clickable. Without
+   it they need an explicit affordance, so hover/focus underlines rather
+   than leaving them indistinguishable from plain text. */
+.nav-btn:hover,
+.nav-btn:focus-visible {
+  text-decoration: underline;
+  text-underline-offset: 0.25em;
+}
+
+/* A fourth link (Home) pushed the one-row header past the gutters. Rough
+   budget at 480px: 0.84 * 480 = 403px between the 8vw side pads, against
+   four labels (~264px of text at the ~18px --fs-body) plus 1.6em of
+   padding each and the gaps. Trimming both here buys roughly 26px, which
+   is what lets the single row survive down to the 479px breakpoint that
+   splits the links onto two rows. This has to sit AFTER the base .nav-btn
+   rule above: a media query adds no specificity, and that rule's `padding`
+   shorthand would otherwise reset padding-inline on source order. */
+@media (max-width: 599px) {
+  .site-header__nav {
+    gap: clamp(0.5rem, 2.5vw, 0.9rem);
+  }
+  .nav-btn {
+    padding-inline: 0.5em;
+  }
 }
 
 .logo {
@@ -131,8 +272,11 @@ h1, h2, p { margin: 0; }
   animation: logo-swing 4.5s ease-in-out infinite;
 }
 
+/* Header badge only — the footer mark is sized separately by
+   .footer__brand img. Scaled to sit just under that one's 100px ceiling so
+   the two read as the same mark at two sizes rather than competing. */
 .logo img {
-  width: clamp(70px, 8vw, 125px);
+  width: clamp(54px, 6vw, 94px);
   height: auto;
   display: block;
   transition: opacity 0.3s ease;
@@ -177,824 +321,264 @@ h1, h2, p { margin: 0; }
 /* ---------------------------------------------------
    Intro
 --------------------------------------------------- */
+/* Was a full-bleed background photograph with the title laid over it, sized
+   by min-height and cropped by object-fit. The illustration is now a plain
+   centred <img> in normal flow with the copy stacked beneath it, which is
+   why all of that machinery — overflow: hidden, min-height, object-position,
+   the mask gradient, the 1820px cap — is gone: nothing is being cropped any
+   more, so there is nothing to frame. */
+/* Deliberately less than --header-h, so the illustration slides up behind
+   the nav rather than starting below it. Safe here and nowhere else on the
+   site: .site-header has no background of its own, and the top of this
+   drawing is empty sky, so the links and the logo sit over blank paper —
+   which is how the reference reads, logo tight above the scene. The floor
+   keeps the title below the header no matter how the clamp resolves. */
 .intro {
-  position: relative;
-  padding-top: clamp(4rem, 8vw, 7rem);
-  padding-bottom: clamp(1.5rem, 4vw, 3rem);
-  overflow: hidden;
-  /* shorter than promise-bg.png's own ratio (1820:1582); object-fit:
-     cover crops the excess so the section doesn't run so tall */
-  aspect-ratio: 1820 / 1100;
+  padding-top: max(clamp(2rem, 5vw, 4rem), calc(var(--header-h) - clamp(1.5rem, 4vw, 3rem)));
+  padding-bottom: clamp(2.5rem, 7vw, 5rem);
+  text-align: center;
 }
-@media (max-width: 799px) {
-  .intro {
-    /* below 800px the grid stacks into a single column (title, badge,
-       text) and needs more height than the desktop ratio allows — a
-       fixed aspect-ratio here clips the content and lets .promise's
-       negative margin-top overlap it. Let height follow content instead;
-       .intro__bg still covers it via object-fit: cover. */
-    aspect-ratio: auto;
-  }
+.intro__stack {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
-.intro__bg {
-  position: absolute;
-  inset: 0;
+/* height: auto is load-bearing. The width/height attributes on the <img>
+   reserve its space against layout shift, but HTML maps them to
+   presentational hints for the width and height properties, and width: 100%
+   alone would leave the height hint standing at its full 1582px. */
+/* The source is 1820x1582 — 1.15:1, near enough to square to read as one.
+   16:9 takes 558px (35%) off it, anchored at the top by object-position so
+   the whole crop comes off the bottom foreground. The sun (y180-440) and the
+   barn (y620-870) both stay; past about 2:1 the barn starts to go, which is
+   where this should stop.
+   height: auto is load-bearing and has to stay even with aspect-ratio set.
+   The width/height attributes on the <img> reserve space against layout
+   shift, but HTML maps them to presentational hints for the width and
+   height properties; width: 100% overrides the width hint, and without
+   height: auto the height hint stands at 1582px. Both dimensions would then
+   be definite and aspect-ratio would be ignored outright. */
+/* Full bleed. It sits outside .wrap in the markup rather than inside it with
+   a 100vw/translateX break-out, because 100vw counts the scrollbar and would
+   push a horizontal scroll onto the page. As a direct child of .intro it just
+   takes the section's full width, with no overflow to manage.
+   Past a 1820px viewport the source starts upscaling and will soften. */
+.intro__scene {
+  display: block;
   width: 100%;
-  height: 100%;
+  height: auto;
+  /* The band from the reference: 3.7:1, framed at 47% so the window lands
+     at y512-1005 of the 1582px source. That drops the sun and the open sky
+     above it, and keeps the barn (y620-870), the hills behind it and the
+     field lines below. */
+  aspect-ratio: 3.7;
   object-fit: cover;
-  object-position: top;
-  opacity: 0.9;
-  pointer-events: none;
-  z-index: 0;
-  /* linear (not radial) so the fade is measured against the box's own
-     edges, not a farthest-corner ellipse — it reaches fully transparent
-     exactly at the bottom edge, right where the wave divider picks up.
-     Fade starts at 30% and eases out gradually over the remaining 70%
-     for a long, smooth transition rather than a late, abrupt one. */
-  mask-image: linear-gradient(to bottom, black 0%, black 30%, transparent 100%);
-  -webkit-mask-image: linear-gradient(to bottom, black 0%, black 30%, transparent 100%);
+  object-position: 50% 47%;
+  margin-bottom: clamp(0.4rem, 1.2vw, 0.85rem);
 }
-
-/* trail of chicken footprints, fading in bottom-to-top on page load,
-   as if it just walked up into view below the paragraph */
-.footprints {
-  position: absolute;
-  top: 100%;
-  right: 50px;
-  margin-top: clamp(0.5rem, 2vw, 1rem);
-  z-index: 1;
-  width: clamp(70px, 9vw, 130px);
-  aspect-ratio: 1 / 1;
-  background-image: url('../assets/footprint.webp');
-  background-size: contain;
-  background-repeat: no-repeat;
-  background-position: bottom left;
-  opacity: 0;
-  pointer-events: none;
-  clip-path: inset(100% 0 0 0);
-  animation: footprints-walk-in 5s ease-in-out 0.5s infinite;
-}
-
-@keyframes footprints-walk-in {
-  0%   { opacity: 0;    clip-path: inset(100% 0 0 0); }
-  20%  { opacity: 0.45; clip-path: inset(0 0 0 0); }
-  80%  { opacity: 0.45; clip-path: inset(0 0 0 0); }
-  100% { opacity: 0;    clip-path: inset(0 0 100% 0); }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .footprints {
-    animation: none;
-    opacity: 0.35;
-    clip-path: inset(0 0 0 0);
-  }
-}
-.intro__grid {
-  position: relative;
-  z-index: 2;
-  display: flex;
-  flex-direction: column;
-  gap: clamp(2.5rem, 6vw, 4.5rem);
-}
-.intro__grid > .intro__copy {
-  display: flex;
-}
-
-/* title */
-.intro__copy {
-  order: 1;
-  flex: 1 1 auto;
-  align-self: center;
-  margin-top: clamp(1.5rem, 5vw, 4rem);
-}
+/* 60% of --fs-hero, kept as a calc on the token rather than a hard-coded
+   clamp so it still tracks if the hero scale is retuned. margin-top is 0:
+   the gap above it now comes only from the illustration's margin-bottom,
+   so there is a single thing to adjust rather than two stacked. */
 .intro__title {
-  font-family: 'IM Fell DW Pica SC', serif;
+  font-family: var(--font-heading);
   font-weight: 400;
-  display: flex;
-  flex-direction: column;
+  font-size: calc(var(--fs-hero) * 0.6);
+  line-height: 1.05;
+  margin: 0;
 }
-.intro__title span {
-  font-size: var(--fs-hero);
-  line-height: 1.1;
-}
-.intro__title span.intro__title-sub {
-  font-size: var(--fs-hero-sub);
-}
-
-/* badge + paragraph */
-.intro__badge {
-  order: 3;
-  position: relative;
-  width: clamp(220px, 30vw, 330px);
-  aspect-ratio: 1 / 1;
-  margin-inline: auto;
-  margin-top: clamp(2rem, 6vw, 5rem);
-}
-.intro__badge-text {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  fill: var(--color-ink);
-  font-family: var(--font-script);
-  font-size: 34px;
-  letter-spacing: 2px;
-}
-.intro__badge-chicken {
-  position: absolute;
-  width: 46%;
-  top: 62%;
-  left: 51%;
-  transform: translate(-50%, -50%);
-}
-
-.intro__text {
-  position: relative;
-  order: 2;
-  flex: 1 1 auto;
-  align-self: center;
-  font-family: var(--font-mono);
+/* Held well short of the title's measure so it reads as a single line of
+   support rather than a paragraph competing with the heading. */
+/* Real italic, not a synthesised slant. Source Serif 4 was being requested
+   without an ital axis, so font-style: italic would have had the browser
+   oblique the upright by shearing it — on a serif that reads as obviously
+   fake, since a true italic has different letterforms, not just a slope.
+   The font URL on every page now asks for ital 1 at weight 400. */
+.intro__tagline {
+  max-width: 54ch;
+  margin: clamp(0.9rem, 2vw, 1.4rem) 0 0;
   font-size: var(--fs-body);
-  line-height: 1.55;
-  text-align: justify;
-  max-width: 45ch;
+  font-style: italic;
+  line-height: 1.7;
+  opacity: 0.82;
 }
 
-@media (max-width: 799px) {
-  /* .footprints trails the paragraph via absolute positioning (top:
-     100%, measured off .intro__text's own box), so it doesn't
-     contribute to that box's height. Now that the badge follows the
-     paragraph in mobile stacking order, push the badge down with a
-     margin (which doesn't feed back into footprints' own position,
-     unlike padding) so it clears the footprints instead of covering it. */
-  .intro__text {
-    margin-bottom: calc(clamp(0.5rem, 2vw, 1rem) + clamp(70px, 9vw, 130px));
-  }
+/* ---------------------------------------------------
+   Home — banner
+--------------------------------------------------- */
+/* A shallow full-width strip between the hero and the Promise section,
+   coloured to break the run of cream the rest of the page sits on. The
+   reference uses a sage band with a bright chartreuse pill; the colours
+   here are the site's own instead — --color-promo, the darkest thing in
+   the palette, which no other section on this page uses.
+   The whole strip is the link, not just the arrow, so the target is the
+   full band rather than a 40px circle. */
+.banner {
+  background: var(--color-promo);
+  color: var(--color-bg);
 }
-
-@media (min-width: 800px) {
-  .intro__grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    grid-template-rows: auto auto;
-    align-items: center;
-    column-gap: clamp(2rem, 5vw, 5rem);
-  }
-  .intro__copy   { grid-column: 1; grid-row: 1; }
-  .intro__badge  { grid-column: 1; grid-row: 2; margin-inline: 0; }
-  .intro__text   { grid-column: 2; grid-row: 1 / 3; max-width: 46ch; }
+.banner__link {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: clamp(0.9rem, 3vw, 2rem);
+  padding-block: clamp(1.1rem, 2.6vw, 1.8rem);
+  color: inherit;
+  text-decoration: none;
+}
+.banner__text {
+  font-family: var(--font-heading);
+  font-size: clamp(1rem, 0.9rem + 0.55vw, 1.4rem);
+  line-height: 1.3;
+}
+/* flex: none so the circle keeps its shape when the label wraps on a
+   narrow screen. */
+.banner__arrow {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 2.4rem;
+  height: 2.4rem;
+  border-radius: 50%;
+  background: var(--color-bg);
+  color: var(--color-promo);
+  font-size: 1.1rem;
+  line-height: 1;
+  transition: transform 0.25s ease;
+}
+.banner__link:hover .banner__arrow,
+.banner__link:focus-visible .banner__arrow {
+  transform: translateX(4px);
 }
 
 /* ---------------------------------------------------
    Promise
 --------------------------------------------------- */
+/* Two columns from the reference: the heading block on the left, the three
+   promises as a vertical timeline on the right. The wave dividers and the
+   scroll-reveal that used to drive this section are gone — no SVG, no
+   IntersectionObserver, no transitions. The old padding-block of
+   clamp(7rem, 14vw, 12rem) existed only to clear the waves' height, and
+   the negative margin-top existed only to tuck under them, so both went.
+   The background photograph went too, and with it the cream wash that used
+   to sit over it, the position: relative that anchored that wash, and the
+   z-index that lifted .wrap above it. The section now sits on the plain
+   page background. */
 .promise {
-  position: relative;
-  /* the wave divider (z-index: 1) paints over the top/bottom edges of this
-     section's content; padding here needs to clear its full height
-     (clamp(70px, 11vw, 160px)) on both sides or the wave visually cuts
-     into the kicker/title above and the features below. */
-  padding-block: clamp(7rem, 14vw, 12rem);
-  margin-top: clamp(-60px, -4vw, -24px);
-  background-image: url('../assets/DP-22055-001.webp');
-  /* cover, not auto-height: this used to be a 100vh+ pinned section, where
-     sizing off the height alone happened to fill the width too. Now that
-     it's a short, normal-flow section, that math instead renders a narrow
-     centered strip with cream bleeding on both sides — cover guarantees
-     full width/height coverage regardless of the section's aspect ratio. */
-  background-size: cover;
-  background-position: center;
-  background-repeat: no-repeat;
+  padding-block: clamp(3.5rem, 9vw, 7rem);
+  /* Follows .offer now, and both sit on the plain page background with no
+     colour or pattern between them — without this rule the two run together
+     as one block. .primer below separates itself with its stripes. */
+  border-top: 1px solid rgba(var(--color-ink-rgb), 0.25);
 }
-.promise::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: rgba(var(--color-bg-rgb), 0.85);
+.promise__layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 0.85fr);
+  gap: clamp(2rem, 6vw, 5rem);
+  align-items: start;
 }
-.promise .wrap {
-  position: relative;
-  /* unlike other sections, let this one's content span the full viewport
-     width instead of capping at --content-max on wide screens. */
-  max-width: none;
-}
-.promise__divider-wrap {
-  position: absolute;
-  left: 0;
-  width: 100%;
-  height: clamp(70px, 11vw, 160px);
-  z-index: 1;
-  overflow: hidden;
-  pointer-events: none;
-}
-.promise__divider-wrap--top {
-  /* 2px past the true edge, not flush: the wrap's fractional (11vw)
-     height doesn't rasterize in perfect lockstep with the flat DOM
-     seam below it, leaving a hairline gap at exact 0. The overlap
-     falls inside the divider's solid-color margin, so it's invisible. */
-  top: -2px;
-}
-.promise__divider-wrap--bottom {
-  bottom: -2px;
-  transform: scaleY(-1);
-}
-.promise__divider {
-  display: block;
-  width: 200%;
-  height: 100%;
-  will-change: transform;
-}
-.promise__divider path {
-  fill: var(--color-bg);
+@media (max-width: 799px) {
+  .promise__layout {
+    grid-template-columns: minmax(0, 1fr);
+  }
 }
 .promise__kicker {
-  text-align: center;
-  font-family: var(--font-mono);
-  font-style: italic;
-  font-size: clamp(0.85rem, 0.75rem + 0.4vw, 1.1rem);
-  color: var(--color-brown);
-  margin-bottom: 0.6rem;
-  opacity: 0;
-  transform: translateY(12px);
-  transition: opacity 0.5s ease-out, transform 0.5s ease-out;
+  margin: 0;
+  font-family: var(--font-body);
+  font-size: calc(var(--fs-body) * 0.8);
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  opacity: 0.7;
 }
-.promise .section-title {
-  margin-bottom: clamp(2rem, 6vw, 3.5rem);
-  opacity: 0;
-  transform: translateY(12px);
-  transition: opacity 0.5s ease-out, transform 0.5s ease-out;
+/* The artwork already carries its own ring and circular crop, so no
+   border-radius here — it is placed at its drawn size, not masked.
+   height: auto because the width/height attributes map to presentational
+   hints, and without it the 234px height hint would stand. */
+.promise__avatar {
+  display: block;
+  width: clamp(64px, 7vw, 92px);
+  height: auto;
+  margin: clamp(0.9rem, 2vw, 1.3rem) 0 0;
 }
-.promise__kicker.is-visible,
-.promise .section-title.is-visible {
-  opacity: 1;
-  transform: translateY(0);
+.promise__title {
+  margin: clamp(0.6rem, 1.5vw, 1rem) 0 0;
+  font-family: var(--font-heading);
+  font-weight: 400;
+  font-size: clamp(2rem, 1.2rem + 3vw, 3.6rem);
+  line-height: 1.08;
 }
 
-.promise__features {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: clamp(2rem, 5vw, 3.5rem);
+/* Held to 42ch so it stays a short paragraph beside the timeline rather
+   than running the full width of its column. */
+.promise__text {
+  max-width: 42ch;
+  margin: clamp(0.9rem, 2vw, 1.4rem) 0 0;
+  font-size: var(--fs-body);
+  line-height: 1.75;
+  opacity: 0.82;
 }
-.promise__feature {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  flex: 1 1 200px;
-  max-width: 280px;
-  gap: 0.75rem;
-  text-align: center;
-  opacity: 0;
-  transform: translateY(24px);
-  transition: opacity 0.5s ease-out, transform 0.5s ease-out;
+
+/* The timeline. --promise-gap is declared here because the connector below
+   has to reach across it: each item draws the segment down to the next one,
+   rather than one line running behind all three. A single line would need a
+   solid chip behind every marker to break it, and the section's background
+   is a photograph, so no flat colour would match. */
+.promise__list {
+  --promise-gap: clamp(1.75rem, 4vw, 2.75rem);
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: var(--promise-gap);
 }
-.promise__feature.is-visible {
-  opacity: 1;
-  transform: translateY(0);
+/* No flex any more: the marker is absolutely placed and the body is the
+   only flow child, so padding-left alone clears it. The old
+   align-items: center would now centre the marker against the whole
+   title-plus-description block instead of sitting level with the title. */
+.promise__item {
+  position: relative;
+  min-height: 2.75rem;
+  padding-left: 4rem;
 }
-.promise__icon-wrap {
-  display: flex;
-  flex: none;
-  align-items: center;
-  justify-content: center;
-  width: clamp(70px, 7vw, 110px);
-  height: clamp(70px, 7vw, 110px);
+.promise__item:not(:last-child)::before {
+  content: '';
+  position: absolute;
+  left: calc(1.375rem - 0.5px);
+  top: 3.1rem;
+  bottom: calc(-1 * var(--promise-gap) - 0.35rem);
+  width: 1px;
+  background: rgba(var(--color-ink-rgb), 0.28);
+}
+.promise__marker {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 2.75rem;
+  height: 2.75rem;
+  display: grid;
+  place-items: center;
+  border: 1px solid rgba(var(--color-ink-rgb), 0.28);
   border-radius: 50%;
-  /* the icon art is gold-on-transparent, made for the old dark photo
-     backdrop; a solid chip keeps it legible on the now-light background. */
-  background: var(--color-brown);
+  background: rgba(var(--color-bg-rgb), 0.9);
 }
-.promise__feature img {
-  width: clamp(46px, 5vw, 74px);
+.promise__marker img {
+  width: 1.5rem;
   height: auto;
 }
-.promise__feature p {
-  font-family: var(--font-display);
-  font-size: var(--fs-body);
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .promise__kicker,
-  .promise .section-title,
-  .promise__feature {
-    opacity: 1;
-    transform: none;
-  }
-}
-
-/* ---------------------------------------------------
-   Gallery
---------------------------------------------------- */
-.gallery {
-  padding-block: clamp(3rem, 8vw, 6rem);
-}
-.gallery .section-title { margin-bottom: clamp(1rem, 3vw, 2rem); }
-
-/* scroll stage: the video block starts as a small centered square and,
-   as the user scrolls through this stage's extra height, grows and
-   reshapes into the video's native ratio while sliding to the right —
-   driven by initVideoFrameMorph() in main.js */
-.gallery__video-stage {
-  position: relative;
-  height: 150vh;
-  margin-bottom: clamp(2rem, 5vw, 3.5rem);
-}
-.gallery__video-frame {
-  position: sticky;
-  top: 12vh;
-  /* .gallery__video-main is position: absolute so it doesn't participate
-     in flex layout, leaving the caption (the only in-flow child) as the
-     sole flex item — centering it vertically against the frame's height
-     (set to the video's height by initVideoFrameMorph.js), matching how
-     the slideshow below vertically centers its caption against its photo. */
-  display: flex;
-  align-items: center;
-}
-/* revealed once the video finishes growing (initVideoFrameMorph.js
-   toggles .is-visible near the end of the scroll stage). Sits in
-   normal flow at the left; .gallery__video-main is taken out of flow
-   (position: absolute) so it can grow/slide on the right independently
-   of this column's own width. */
-.gallery__video-caption {
-  width: 100%;
-  max-width: min(320px, 34%);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 0.6rem;
-  opacity: 0;
-  transform: translateY(12px);
-  transition: opacity 0.4s ease-out, transform 0.4s ease-out;
-}
-/* JS sizes the outer element to the full space left of the video; shrinking
-   just the title/text within that and centering them (align-items above)
-   keeps the block from stretching edge-to-edge while nudging it inward. */
-.gallery__video-caption > * {
-  max-width: clamp(240px, 30vw, 380px);
-}
-.gallery__video-caption.is-visible {
-  opacity: 1;
-  transform: translateY(0);
-}
-/* width + left are driven by initVideoFrameMorph() in main.js, growing
-   from a small centered square to a wider right-aligned block */
-.gallery__video-main {
-  position: absolute;
-  top: 0;
-}
-.gallery__video-box {
-  position: relative;
-  overflow: hidden;
-  background: var(--color-tan);
-}
-.gallery__video {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  display: block;
-}
-/* Hidden unless initVideoAutoplayFallback() (main.js) detects autoplay was
-   blocked (iOS Low Power Mode and some Android battery-saver modes disable
-   video autoplay outright to save power — no JS can override that, only a
-   real tap can start playback) and adds .is-paused to the box. */
-.gallery__video-play {
-  display: none;
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  width: clamp(48px, 12vw, 64px);
-  aspect-ratio: 1 / 1;
-  align-items: center;
-  justify-content: center;
-  border: none;
-  border-radius: 50%;
-  background: rgba(var(--color-ink-rgb), 0.55);
-  color: #fff;
-  font-size: clamp(1.1rem, 3vw, 1.5rem);
-  cursor: pointer;
-  z-index: 1;
-}
-.gallery__video-box.is-paused .gallery__video-play {
-  display: flex;
-}
-
-@media (max-width: 700px) {
-  /* No side-by-side room on a single column, so the video stacks first
-     (still growing/repositioned by initVideoFrameMorph.js, just in
-     normal flow here instead of absolute) and the caption reveals
-     below it instead of to its left. */
-  .gallery__video-frame {
-    display: flex;
-    flex-direction: column;
-    align-items: stretch;
-  }
-  .gallery__video-main {
-    position: static;
-    order: 1;
-    margin-inline: auto;
-  }
-  .gallery__video-caption {
-    order: 2;
-    max-width: none;
-    align-items: stretch;
-    margin-top: clamp(1rem, 4vw, 1.5rem);
-  }
-  .gallery__video-caption > * {
-    max-width: none;
-  }
-}
-
-/* Shared by the video caption above and the photo slideshow below. */
-.gallery__title {
-  font-family: 'IM Fell DW Pica SC', serif;
-  font-weight: 400;
-  font-size: clamp(1.4rem, 1.2rem + 1.2vw, 2.2rem);
-  line-height: 1.1;
-}
-.gallery__desc {
-  font-family: var(--font-display);
-  font-size: var(--fs-body);
-  line-height: 1.55;
-  text-align: justify;
-}
-
-/* Photo slideshow: single photo + caption, stepped through with arrows —
-   same interaction pattern as .product__slideshow, just laid out
-   side-by-side instead of stacked since there's room for it here. Grid
-   (not flex) so the same 4 elements can be regrouped for the mobile
-   layout below without any wrapper markup: desktop keeps the prev arrow
-   next to the photo and the next arrow next to the caption, mobile
-   instead puts both arrows either side of the title. */
-.gallery__slideshow {
-  display: grid;
-  grid-template-columns: auto clamp(200px, 26vw, 320px) 1fr auto;
-  grid-template-areas: "prev photo caption next";
-  align-items: center;
-  gap: clamp(1rem, 3vw, 2rem);
-  margin-top: clamp(2rem, 5vw, 3rem);
-}
-.gallery__slideshow .arrow-btn--prev { grid-area: prev; }
-.gallery__slideshow .arrow-btn--next { grid-area: next; }
-.gallery__slide-photo {
-  grid-area: photo;
-  position: relative;
+.promise__item-text {
   margin: 0;
-  aspect-ratio: 329 / 439;
-  overflow: hidden;
+  font-family: var(--font-heading);
+  font-size: clamp(1rem, 0.9rem + 0.4vw, 1.25rem);
+  line-height: 1.35;
 }
-.gallery__slide-photo img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  display: block;
-}
-.gallery__slide-caption {
-  grid-area: caption;
-  min-width: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 0.6rem;
-}
-
-/* Mobile-only tap-to-reveal: hidden entirely on desktop, where the
-   description already shows inline in .gallery__slide-caption. */
-.gallery__slide-overlay {
-  display: none;
-}
-
-@media (max-width: 700px) {
-  .gallery__slideshow {
-    grid-template-columns: auto 1fr auto;
-    grid-template-areas:
-      "photo photo photo"
-      "prev caption next";
-  }
-  .gallery__slide-photo {
-    cursor: pointer;
-  }
-  /* Title stays visible below the photo; the description moves onto the
-     photo itself as a tap-to-reveal overlay instead. */
-  .gallery__slide-caption .gallery__desc {
-    display: none;
-  }
-  .gallery__slide-overlay {
-    display: flex;
-    align-items: flex-end;
-    position: absolute;
-    inset: 0;
-    padding: 1rem;
-    /* on the narrowest phones the description can wrap past the photo's
-       own height; scroll rather than clip against the top edge */
-    overflow-y: auto;
-    background: linear-gradient(to top, rgba(var(--color-ink-rgb), 0.85) 0%, transparent 65%);
-    opacity: 0;
-    transition: opacity 0.3s ease;
-    pointer-events: none;
-  }
-  .gallery__slide-overlay.is-visible {
-    opacity: 1;
-    /* only interactive (scrollable) once shown; while hidden it shouldn't
-       intercept touches meant for the photo/arrows underneath */
-    pointer-events: auto;
-  }
-  .gallery__slide-overlay .gallery__desc {
-    display: block;
-    margin: 0;
-    color: #fff;
-  }
-}
-
-/* ---------------------------------------------------
-   Farm
---------------------------------------------------- */
-/* One continuous pinned sequence (CSS position: sticky), driven by
-   initFarmSequence() (main.js) — no separate "newspaper" section handing
-   off to a separate "farm" section, so there's no seam to cross: the
-   newspaper poster sits still -> hops up and back down -> zooms in while
-   dissolving into the real farm.webp photo, then WITHOUT stopping keeps
-   using that same photo/transform for the rest of the sequence — the
-   "Farm" title fades in first, then each reveal card pops in as the
-   background continues zooming/panning, holding until the section finally
-   releases into the footer. .farm__pin, and each .wrap.farm__reveal all
-   share the same grid cell (stacked via grid-area) so they overlap without
-   negative-margin math; .farm's min-height gives the sticky elements room
-   to hold before they release. */
-.farm {
-  position: relative;
-  display: grid;
-  min-height: 1280vh;
-}
-.farm__pin {
-  grid-area: 1 / 1;
-  position: sticky;
-  top: 0;
-  height: 100vh;
-  overflow: hidden;
-  z-index: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-/* Shrink-wraps to .farm__paper-img's rendered size (native max-height/
-   width:auto sizing on the img itself), so .farm__bg-img below can be
-   positioned against it in percentages. Carries the scroll-driven
-   translate/rotate/scale transform for the entire sequence — both the
-   newspaper-flight phase AND every zoom/pan stage afterward — so the
-   photo never changes element or coordinate system underneath the
-   choreography. */
-.farm__stage {
-  position: relative;
-  display: inline-block;
-  /* The printed photo is a redraw of the exact same farm.webp used as
-     .farm__bg-img. This origin is the pixel-measured point within it that
-     matches farm.webp's own tuned focus point (the white-roofed barn and
-     blue fence panel), so the zoom phase lands on the same framing the
-     old standalone Farm background used to open on, and continuing to
-     zoom from here after the dissolve keeps converging on that same spot
-     instead of drifting to some arbitrary point on the page. */
-  transform-origin: 48.3% 50.2%;
-  will-change: transform;
-}
-.farm__paper-img {
-  max-height: 82vh;
-  width: auto;
-  display: block;
-  box-shadow: 0 20px 60px rgba(var(--color-ink-rgb), 0.35);
-}
-/* Positioned over the exact sub-region of .farm__paper-img that shows the
-   printed farm photo (same pixel measurements as the stage's
-   transform-origin above). Starts invisible; initFarmSequence() fades it
-   in over the zoom phase so the illustration dissolves into this real,
-   full-color photo as the zoom lands. Once the dissolve finishes,
-   initFarmSequence() moves it out of .farm__stage and adds
-   .farm__bg-img--settled (below) so it becomes a plain full-bleed cover
-   image instead — staying inside the small absolutely-positioned box for
-   the rest of the (considerably further) zooming/panning ahead would
-   eventually pan past its own edges and expose blank space beneath it. */
-.farm__bg-img {
-  position: absolute;
-  left: 7.21%;
-  top: 33.3%;
-  width: 84.88%;
-  height: 33.7%;
-  object-fit: cover;
-  opacity: 0;
-  display: block;
-}
-.farm__bg-img--settled {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  /* focus point: the white-roofed barn and its blue fence panel — both
-     the settled resting crop and the further zoom/pan stages converge
-     here, matching where the dissolve landed. */
-  object-position: 42% 27%;
-}
-/* Darkens the photo once it's settled into being the plain Farm
-   background — kept at 0 through the bright newspaper-poster phase so
-   that part stays undarkened, then faded in alongside the color photo. */
-.farm__scrim {
-  position: absolute;
-  inset: 0;
-  background: rgba(var(--color-ink-rgb), 0.5);
-  opacity: 0;
-}
-/* The scrim above darkens the background photo, so all the reveal cards
-   (which sit over the same pinned photo) switch to light text with a
-   shadow for contrast, instead of the site's default dark ink. */
-.farm__reveal-title,
-.farm__reveal-desc {
-  color: #fff;
-  text-shadow: var(--shadow-caption);
-}
-
-/* Fades in over the pinned, still-zooming background once
-   initFarmSequence() (main.js) determines it's this card's turn — sticky
-   like .farm__pin so it holds in the viewport rather than being stuck at
-   the top of the tall grid cell. Each card slides in from alternating
-   sides (--left / --right, set by initFarmSequence()) and fades back out
-   to that same side, so consecutive cards visibly cross in from opposite
-   directions instead of just popping in place. */
-.farm .wrap.farm__reveal {
-  grid-area: 1 / 1;
-  position: sticky;
-  top: 0;
-  height: 100vh;
-  padding-block: 0;
-  display: flex;
-  align-items: center;
-  gap: clamp(1.5rem, 4vw, 3rem);
-  opacity: 0;
-  transition: opacity 0.8s ease, transform 0.8s ease;
-  pointer-events: none;
-}
-.farm .wrap.farm__reveal.farm__reveal--left {
-  transform: translateX(-4%);
-}
-.farm .wrap.farm__reveal.farm__reveal--right {
-  flex-direction: row-reverse;
-  transform: translateX(4%);
-}
-.farm .wrap.farm__reveal.is-visible {
-  opacity: 1;
-  transform: translateX(0);
-  pointer-events: auto;
-}
-.farm__reveal-photo {
-  flex: 1 1 0;
-  margin: 0;
-  max-width: 420px;
-  aspect-ratio: 4 / 3;
-  overflow: hidden;
-}
-.farm__reveal-photo img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  display: block;
-}
-.farm__reveal-text {
-  flex: 1 1 0;
-}
-.farm__reveal-title {
-  font-family: 'IM Fell DW Pica SC', serif;
-  font-weight: 400;
-  font-size: clamp(1.4rem, 1.2rem + 1.2vw, 2.2rem);
-  line-height: 1.1;
-  margin-bottom: 0.6rem;
-}
-.farm__reveal-desc {
-  font-family: var(--font-display);
-  font-size: var(--fs-body);
-  line-height: 1.55;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .farm .wrap.farm__reveal {
-    transition: none;
-    transform: none;
-  }
-}
-
-@media (max-width: 700px) {
-  /* .farm__reveal--right's row-reverse (desktop, left/right alternation)
-     is more specific than the plain .farm__reveal rule below, so it needs
-     its own override here to fall back to a single column like the rest. */
-  .farm .wrap.farm__reveal,
-  .farm .wrap.farm__reveal.farm__reveal--right {
-    flex-direction: column;
-    padding-block: clamp(1.5rem, 6vw, 3rem);
-    overflow-y: auto;
-  }
-  /* flex: 1 1 0 sizes the photo's width in the desktop row layout;
-     reinterpreted as a height constraint once flex-direction switches to
-     column here, it would otherwise collapse the photo to 0 height. */
-  .farm__reveal-photo {
-    flex: none;
-    max-width: 320px;
-    width: 100%;
-  }
-}
-
-/* ---------------------------------------------------
-   Product
---------------------------------------------------- */
-.product {
-  padding-block: clamp(3rem, 8vw, 6rem);
-}
-.product__slideshow {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: clamp(1.25rem, 3vw, 2rem);
-  width: clamp(220px, 30vw, 360px);
-  margin: clamp(2rem, 6vw, 3.5rem) auto 0;
-}
-.product__stage {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  width: 100%;
-}
-.product__item {
-  position: relative;
-  flex: 1;
-  min-width: 0;
-  aspect-ratio: 329 / 439;
-  margin: 0;
-  overflow: hidden;
-}
-.product__photo {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-/* Shared prev/next slideshow control — used by both .product__stage and
-   .gallery__slide-stage. */
-.arrow-btn {
-  flex: 0 0 auto;
-  width: 2.25rem;
-  height: 2.25rem;
-  border: 2px solid var(--color-brown);
-  border-radius: 50%;
-  background: var(--color-bg);
-  color: var(--color-brown);
-  font-size: 1.25rem;
-  line-height: 1;
-  cursor: pointer;
-  transition: background 0.2s ease, color 0.2s ease;
-}
-.arrow-btn:hover,
-.arrow-btn:focus-visible {
-  background: var(--color-brown);
-  color: #fff;
-}
-.product__name {
-  margin: 0;
-  font-family: var(--font-mono);
-  font-size: var(--fs-body);
-  color: var(--color-ink);
-  text-align: center;
-}
-.product__toggle {
-  display: flex;
-  gap: 0.75rem;
-  width: 100%;
-}
-.product__toggle-btn {
-  flex: 1;
-}
-.product__toggle-btn.is-active {
-  background: var(--color-brown);
-  color: #fff;
-}
-/* the <a> wrapping .product__btn is inline by default, so as a flex
-   item under align-items: center it shrinks to the button's own text
-   width instead of the slideshow's full width — force it to fill instead */
-.product__slideshow > a {
-  display: block;
-  width: 100%;
-}
-.product__btn {
-  width: 100%;
-  padding-block: clamp(0.75rem, 2vw, 1rem);
-  border: 2px solid var(--color-brown);
-  border-radius: 20px;
-  background: var(--color-bg);
-  color: var(--color-ink);
-  font-family: var(--font-mono);
-  font-size: var(--fs-body);
-  cursor: pointer;
-  transition: background 0.2s ease, color 0.2s ease;
-}
-.product__btn:hover,
-.product__btn:focus-visible {
-  background: var(--color-brown);
-  color: #fff;
+/* Smaller and lighter than the title it sits under, so the three points
+   still scan as a list rather than three paragraphs. */
+.promise__item-desc {
+  max-width: 44ch;
+  margin: 0.4em 0 0;
+  font-size: calc(var(--fs-body) * 0.85);
+  line-height: 1.65;
+  opacity: 0.78;
 }
 
 /* ---------------------------------------------------
@@ -1027,15 +611,15 @@ h1, h2, p { margin: 0; }
   color: inherit;
   padding: clamp(0.5rem, 1.5vw, 1rem) clamp(1.25rem, 6vw, 6.5rem) clamp(0.5rem, 1.5vw, 1rem) clamp(1.25rem, 5vw, 6.5rem);
   text-align: left;
-  font-family: var(--font-mono);
+  font-family: var(--font-body);
 }
 .faq__question {
-  font-family: var(--font-display);
+  font-family: var(--font-body);
   font-size: var(--fs-faq-q);
 }
 .faq__icon {
   flex: none;
-  font-family: var(--font-mono);
+  font-family: var(--font-body);
   font-weight: 700;
   font-size: var(--fs-faq-icon);
   transition: transform 0.25s ease;
@@ -1070,10 +654,52 @@ h1, h2, p { margin: 0; }
 /* ---------------------------------------------------
    Footer
 --------------------------------------------------- */
+/* promise-bg.webp printed faintly across the footer. isolation: isolate
+   keeps the blend below from reaching the page behind the footer. */
 .site-footer {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
   background: var(--color-footer);
   margin-top: clamp(3rem, 8vw, 6rem);
-  padding-block: clamp(2.5rem, 6vw, 4.5rem);
+  /* see body:has(...) below — this margin is zeroed when the page ends on a
+     colour band, where it would show as a strip of page background. */
+  padding-block: clamp(2.5rem, 6vw, 4rem);
+}
+/* The footer's margin-top is breathing room under a page that ends on the
+   cream background. It has to go when the last section paints its own
+   background, or it shows through as a strip of page cream between that
+   section and the footer.
+   .primer counts even though its base colour IS the page cream: its stripes
+   stop at the section edge, so the margin reads as a gap where the pattern
+   runs out. :has() rather than a class on <body> so this stays right
+   wherever these sections are moved to. */
+body:has(main > :last-child.journal) .site-footer,
+body:has(main > :last-child.primer) .site-footer {
+  margin-top: 0;
+}
+
+/* multiply, not plain opacity. The drawing is pale lines on white, so at a
+   low opacity the white would simply wash --color-footer lighter and the
+   barn would disappear. Under multiply white is a no-op and only the lines
+   darken, which prints the illustration onto the footer colour instead of
+   fading the colour out. 0.55 lands the lines at #CCC0B2 on #D6CEC2 —
+   visible as texture, nowhere near the text. 55% vertical framing catches
+   the barn and the field lines rather than the empty sky up top. */
+.site-footer::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  background: url('../assets/promise-bg.webp') 50% 55% / cover no-repeat;
+  mix-blend-mode: multiply;
+  opacity: 0.55;
+  pointer-events: none;
+}
+/* Above the overlay, so the blend never touches the text. */
+.site-footer > .wrap {
+  position: relative;
+  z-index: 1;
 }
 /* The Farm section's pinned background already releases into plain page
    background right at its own edge — this margin on top of that reads as
@@ -1081,111 +707,1310 @@ h1, h2, p { margin: 0; }
 main:has(> .farm) + .site-footer {
   margin-top: 0;
 }
-.footer__info {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: clamp(1.5rem, 3vw, 2.5rem);
-  font-size: 0.8rem;
+
+/* Brand mark, pages, then the contact block. Three explicit tracks rather
+   than auto-fit: the columns carry very different amounts of text, so
+   equal shares would leave Explore stranded beside a much taller block. */
+.footer__top {
+  display: grid;
+  grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr) minmax(0, 1.5fr);
+  gap: clamp(1.75rem, 4vw, 3.5rem);
+  align-items: start;
 }
-.footer__info-item--address {
-  max-width: 320px;
+@media (max-width: 899px) {
+  .footer__top { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
-.footer__info-pair {
-  display: flex;
-  align-items: flex-start;
-  gap: clamp(1.5rem, 3vw, 2.5rem);
+@media (max-width: 479px) {
+  .footer__top { grid-template-columns: 1fr; }
 }
-.footer__brand {
-  display: flex;
-  flex-direction: column;
-  gap: clamp(0.5rem, 1.5vw, 0.75rem);
-  margin-bottom: clamp(1.25rem, 4vw, 2.5rem);
-}
-.footer__brand-row {
-  display: flex;
-  align-items: center;
-  gap: clamp(1rem, 3vw, 2rem);
-}
+
 .footer__logo {
   position: relative;
   display: inline-block;
 }
 .footer__brand img {
-  width: clamp(50px, 6vw, 100px);
+  width: clamp(64px, 7vw, 96px);
   height: auto;
   transition: opacity 0.3s ease;
 }
 .footer__company {
-  font-family: var(--font-display);
-  font-size: var(--fs-footer-label);
-  white-space: nowrap;
+  margin: clamp(0.75rem, 2vw, 1rem) 0 0;
+  font-family: var(--font-heading);
+  font-size: var(--fs-body);
+  line-height: 1.35;
 }
+
+/* Column heading. Small caps in the display face, the same note the
+   .kicker uses on the pages above. */
 .footer__label {
-  font-family: var(--font-display);
-  font-size: var(--fs-footer-label);
-  margin-top: clamp(0.75rem, 2vw, 1.5rem);
+  margin: 0 0 clamp(0.75rem, 2vw, 1rem);
+  font-family: var(--font-heading);
+  font-size: 0.95rem;
+  letter-spacing: 0.1em;
+  opacity: 0.6;
 }
-.footer__label:first-of-type { margin-top: 0; }
-.footer__whatsapp-icon {
-  width: clamp(16px, 1.4vw, 22px);
-  height: auto;
+.footer__label--follow { margin-top: clamp(1.5rem, 3vw, 2rem); }
+
+.footer__col ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 0.55em;
 }
-.footer__value {
-  font-family: var(--font-mono);
-  font-size: var(--fs-footer-value);
-  margin-top: 0.4em;
+.footer__col a {
+  font-size: var(--fs-body);
+  text-decoration: none;
+  transition: opacity 0.25s ease;
 }
-.footer__value--contact {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 0.35em;
+.footer__col a:hover,
+.footer__col a:focus-visible {
+  text-decoration: underline;
+  text-underline-offset: 0.22em;
 }
-.footer__contact-name {
-  font-family: var(--font-display);
-  font-size: 1.4em;
-  font-weight: normal;
+
+.footer__contact {
+  margin: 0;
+  display: grid;
+  gap: 0.45em;
+  font-size: var(--fs-body);
+  line-height: 1.5;
 }
+.footer__contact-name { opacity: 0.7; }
 .footer__contact-row {
   display: flex;
   align-items: center;
   gap: 0.5em;
 }
-.footer__whatsapp-link {
+.footer__whatsapp-icon {
+  width: clamp(14px, 1.2vw, 18px);
+  height: auto;
+}
+.footer__contact a {
   text-decoration: none;
 }
-.footer__whatsapp-link:hover {
+.footer__contact a:hover {
   text-decoration: underline;
+  text-underline-offset: 0.22em;
 }
-.footer__links {
+.footer__social {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.9em;
+  font-size: var(--fs-body);
+}
+.footer__social a { text-decoration: none; }
+.footer__social a:hover {
+  text-decoration: underline;
+  text-underline-offset: 0.22em;
+}
+
+/* Legal bar, ruled off from the columns above — the separated strip that
+   makes the reference footer read as finished rather than trailing off. */
+.footer__bar {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 0.5rem clamp(1rem, 3vw, 2rem);
+  margin-top: clamp(2.5rem, 6vw, 4rem);
+  padding-top: clamp(1.25rem, 3vw, 1.75rem);
+  border-top: 1px solid rgba(var(--color-ink-rgb), 0.2);
+  font-size: 0.8rem;
+  letter-spacing: 0.03em;
+  opacity: 0.75;
+}
+.footer__bar p { margin: 0; }
+
+/* ---------------------------------------------------
+   Home — shared estate furniture
+--------------------------------------------------- */
+/* Small-caps standfirst above a heading, set in the display face. The
+   British estate-signage note the rest of the site already uses. */
+.kicker {
+  font-family: var(--font-heading);
+  font-size: var(--fs-body);
+  letter-spacing: 0.12em;
+  opacity: 0.65;
+  margin-bottom: 0.4em;
+}
+.kicker--light { opacity: 0.8; }
+
+.link-more {
+  display: inline-block;
+  margin-top: clamp(1.5rem, 3vw, 2.25rem);
+  font-family: var(--font-heading);
+  font-size: var(--fs-body);
+  text-decoration: none;
+  border-bottom: 1px solid currentColor;
+  padding-bottom: 0.15em;
+}
+.link-more:hover { opacity: 0.65; }
+
+/* ---------------------------------------------------
+   Home — primer
+--------------------------------------------------- */
+/* Reduced to a centred paragraph and a link: the caps/italic heading and
+   the soft-edged photograph it was built around have both been taken out.
+   The margin-top on .primer__text is what sets the space below the hero
+   now that nothing precedes it in the section. */
+/* Ticking stripe, scoped to this section only. The reference's rhythm is a
+   pair of thin lines, then a thick one, then a wide gap — measured off it at
+   roughly 2,7,2,7,7,21 over a 46px period, scaled here to a 72px period.
+   Colour comes from --color-brown rather than the reference's red, since the
+   palette is the site's own. The alphas are low because the problem behind
+   text is not contrast but noise: at 0.55 the ink still measured 8.3:1, yet
+   stripes crossing the letterforms broke up the words. 0.12/0.20 keeps the
+   pattern legible as a texture without cutting through the copy. */
+.primer {
+  padding-block: clamp(3rem, 8vw, 6rem);
+  text-align: center;
+  background-color: var(--color-bg);
+  background-image: repeating-linear-gradient(
+    90deg,
+    transparent 0 4px,
+    rgba(var(--color-brown-rgb), 0.12) 4px 8px,
+    transparent 8px 20px,
+    rgba(var(--color-brown-rgb), 0.12) 20px 24px,
+    transparent 24px 36px,
+    rgba(var(--color-brown-rgb), 0.20) 36px 48px,
+    transparent 48px 72px
+  );
+}
+.primer__text {
+  max-width: 46ch;
+  margin: clamp(1rem, 2.5vw, 1.75rem) auto 0;
+  font-size: calc(var(--fs-body) * 0.9);
+  line-height: 1.75;
+  opacity: 0.82;
+}
+/* Small by request, and sized as a label rather than a heading. It used to
+   be the page's second <h1>; it is an <h2> now, because two <h1>s left the
+   hero and this line competing over what index.html is about — and this one
+   is a caption, not the subject of the page. Only the tag changed. */
+.primer__heading {
+  margin: clamp(0.9rem, 2.5vw, 1.4rem) 0 0;
+  font-family: var(--font-heading);
+  font-weight: 400;
+  font-size: calc(var(--fs-body) * 0.95);
+  letter-spacing: 0.06em;
+  line-height: 1.3;
+  opacity: 0.8;
+}
+.primer .link-more {
+  display: block;
+  width: fit-content;
+  margin-inline: auto;
+}
+
+/* ---------------------------------------------------
+   Home — product overview
+--------------------------------------------------- */
+/* One product only, pointing at products.html for the rest. */
+/* No border-top: this sits directly under the banner's colour band, which
+   already gives a hard edge — a hairline under it reads as a double rule.
+   The divider that would live here is on .promise instead. */
+.offer {
+  padding-block: clamp(2.5rem, 7vw, 5rem);
+}
+.offer__layout {
+  display: grid;
+  grid-template-columns: minmax(0, 0.8fr) minmax(0, 1fr);
+  gap: clamp(1.5rem, 5vw, 4rem);
+  align-items: center;
+}
+@media (max-width: 799px) {
+  .offer__layout {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+.offer__media {
+  margin: 0;
+}
+/* The packshot is photographed on white, and the page is cream, so it would
+   otherwise sit in a visibly brighter rectangle. multiply drops the white
+   out and lets the bird sit directly on the page — the same treatment
+   .card__media img uses on the products page. */
+.offer__media img {
+  display: block;
+  width: 100%;
+  height: auto;
+  max-width: 400px;
+  margin-inline: auto;
+  mix-blend-mode: multiply;
+}
+.offer__title {
+  margin: clamp(0.4rem, 1.2vw, 0.7rem) 0 0;
+  font-family: var(--font-heading);
+  font-weight: 400;
+  font-size: clamp(1.7rem, 1.1rem + 2.2vw, 2.9rem);
+  line-height: 1.1;
+}
+.offer__text {
+  max-width: 48ch;
+  margin: clamp(0.9rem, 2vw, 1.3rem) 0 0;
+  font-size: var(--fs-body);
+  line-height: 1.7;
+  opacity: 0.85;
+}
+
+/* ---------------------------------------------------
+   Home — journal rail
+--------------------------------------------------- */
+/* A sideways-scrolling strip of short notes, each linking to its own page.
+   Pure CSS: overflow-x plus scroll-snap, no script and no carousel library,
+   so it degrades to an ordinary scrollable row everywhere.
+   The band is --color-promo, the same dark green as the banner, so the two
+   bookend the page. It measures better than every brown tried here: cream
+   text 8.58:1, cream cards 8.58:1 against the band, and 5.88:1 against the
+   footer it now sits directly on. The browns all forced a compromise —
+   solid --color-brown is a dead zone where neither ink (4.46:1) nor cream
+   (3.92:1) passes, and the pale tints left the cards at 2.4:1 or less and
+   almost no edge against the footer.
+   The rail sits OUTSIDE .wrap so the cards run to the screen edge and the
+   next one peeks in — that overhang is what tells people it scrolls. The
+   track then re-creates .wrap's gutter itself with --rail-pad, so the first
+   card still lines up under the heading. */
+.journal {
+  padding-block: clamp(2.5rem, 7vw, 5rem);
+  background: var(--color-promo);
+  color: var(--color-bg);
+}
+/* Not .section-title: --fs-h2 runs to ~91px, which would make this the
+   loudest heading on the page, above "We Promise". Sized to match
+   .offer__title so it reads as that section's peer. */
+.journal__heading {
+  margin: 0;
+  font-family: var(--font-heading);
+  font-weight: 400;
+  font-size: clamp(1.7rem, 1.1rem + 2.2vw, 2.9rem);
+  line-height: 1.1;
+}
+.journal__rail {
+  /* .wrap is max-width + auto margins, so on wide screens its content starts
+     well inside the page. This reproduces that inset: the side padding on a
+     narrow screen, the centring offset plus the padding on a wide one. */
+  --rail-pad: max(var(--side-pad), (100% - var(--content-max)) / 2 + var(--side-pad));
+  margin-top: clamp(1.75rem, 4vw, 2.5rem);
+  overflow-x: auto;
+  /* Stops a sideways flick at the end of the row from navigating back a
+     page or scrolling the page behind it. */
+  overscroll-behavior-x: contain;
+  scroll-snap-type: x mandatory;
+  scroll-padding-inline: var(--rail-pad);
+  /* Scrollbar hidden, scrolling kept: the card overhanging the right edge
+     already says the row moves, and a bar under it was one cue too many.
+     Three declarations because each engine hides it differently. */
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.journal__rail::-webkit-scrollbar {
+  display: none;
+}
+.journal__rail:focus-visible {
+  outline: 2px solid var(--color-bg);
+  outline-offset: 4px;
+}
+/* width: max-content so the track is as wide as its cards: without it the
+   track is only as wide as the rail, and the trailing padding collapses so
+   the last card ends flush against the screen edge. */
+.journal__track {
+  display: flex;
+  width: max-content;
+  gap: clamp(1rem, 2.5vw, 1.75rem);
+  margin: 0;
+  padding: 0 var(--rail-pad) clamp(0.9rem, 2vw, 1.25rem);
+  list-style: none;
+}
+/* flex: none or the cards would squeeze to fit instead of overflowing, and
+   the row would never scroll. The clamp keeps roughly one card plus a sliver
+   of the next on a phone, and three or four across on a desktop.
+   position: relative anchors the stretched link below; column layout lets
+   .journal__more sit on margin-top: auto so every card's "Read more" lines
+   up however long the text above it runs. */
+.journal__card {
+  position: relative;
+  flex: none;
   display: flex;
   flex-direction: column;
-  align-items: flex-start;
-  gap: 0.35em;
-  margin-top: 0.4em;
+  width: clamp(250px, 72vw, 330px);
+  scroll-snap-align: start;
+  padding: clamp(1.25rem, 3vw, 1.75rem);
+  background: var(--color-bg);
+  color: var(--color-ink);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
-.footer__links a {
-  font-family: var(--font-mono);
-  font-size: var(--fs-footer-value);
+/* The link is on the title, so that is the text a screen reader announces
+   for it, but ::after stretches the hit area over the whole card. Anything
+   in the card that must stay clickable or selectable would need its own
+   position + z-index to sit above this. */
+.journal__link {
+  color: inherit;
   text-decoration: none;
 }
-.footer__links a:hover { text-decoration: underline; }
+.journal__link::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+}
+.journal__card:hover,
+.journal__card:focus-within {
+  transform: translateY(-3px);
+  box-shadow: 0 6px 18px rgba(var(--color-ink-rgb), 0.18);
+}
+.journal__card:hover .journal__link,
+.journal__link:focus-visible {
+  text-decoration: underline;
+  text-underline-offset: 0.18em;
+}
+.journal__card:hover .journal__more {
+  transform: translateX(3px);
+}
+@media (prefers-reduced-motion: reduce) {
+  .journal__card,
+  .journal__more {
+    transition: none;
+  }
+  .journal__card:hover,
+  .journal__card:focus-within {
+    transform: none;
+  }
+  .journal__card:hover .journal__more {
+    transform: none;
+  }
+}
+/* 0.65 measures 5.67:1 on the cream card; .journal__text's 0.8 gives
+   9.69:1 and .journal__more's 0.7 gives 6.76:1. */
+.journal__tag {
+  margin: 0 0 0.75em;
+  font-family: var(--font-heading);
+  font-size: calc(var(--fs-body) * 0.8);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  opacity: 0.65;
+}
+.journal__title {
+  margin: 0;
+  font-family: var(--font-heading);
+  font-size: calc(var(--fs-body) * 1.15);
+  font-weight: 400;
+  line-height: 1.25;
+}
+.journal__text {
+  margin: 0.7em 0 0;
+  font-size: calc(var(--fs-body) * 0.85);
+  line-height: 1.65;
+  opacity: 0.8;
+}
+/* margin-top: auto pins this to the bottom of the card. aria-hidden in the
+   markup: the title link already names the destination, so announcing
+   "Read more" again would just be a second label for the same thing. */
+.journal__more {
+  margin: auto 0 0;
+  padding-top: clamp(1rem, 2.5vw, 1.4rem);
+  font-family: var(--font-heading);
+  font-size: calc(var(--fs-body) * 0.85);
+  opacity: 0.7;
+  transition: transform 0.2s ease;
+}
 
-@media (max-width: 700px) {
-  /* At this width two short columns (e.g. Contact + Email) fit on the same
-     line and wrap unevenly next to the full-width ones above them —
-     forcing one column keeps every item's spacing consistent. */
-  .footer__info {
-    flex-direction: column;
-    gap: clamp(1.5rem, 5vw, 2rem);
+/* ---------------------------------------------------
+   Scroll reveal
+--------------------------------------------------- */
+/* Used by [data-reveal] elements, currently the three in .primer.
+   Nothing here hides anything on its own: the stylesheet never sets
+   opacity: 0 on real content, because if js/main.js fails to load or is
+   blocked the section would stay blank with no way back. Script adds
+   .is-revealing, so the hidden state only ever exists while the script that
+   clears it is running.
+   The transition lives on the END state, not on [data-reveal], so adding
+   the hidden class on load cannot animate the element out first. */
+.is-revealing {
+  opacity: 0;
+  transform: translateY(14px);
+}
+.is-revealed {
+  opacity: 1;
+  transform: none;
+  transition: opacity 0.7s ease, transform 0.7s cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+
+/* ---------------------------------------------------
+   Blog posts
+--------------------------------------------------- */
+/* .site-header is position: absolute and out of flow, so the first section
+   on every page reserves its own clearance — same pattern as .video. */
+.post {
+  padding-top: max(clamp(7rem, 14vw, 11rem), calc(var(--header-h) + 2rem));
+  padding-bottom: clamp(3rem, 8vw, 6rem);
+}
+.post__title {
+  max-width: 20ch;
+  margin: 0.2em 0 0;
+  font-family: var(--font-heading);
+  font-weight: 400;
+  font-size: clamp(2rem, 1.2rem + 3vw, 3.6rem);
+  line-height: 1.08;
+}
+.post__lede {
+  max-width: 54ch;
+  margin: clamp(1rem, 2.5vw, 1.5rem) 0 0;
+  font-size: calc(var(--fs-body) * 1.1);
+  font-style: italic;
+  line-height: 1.6;
+  opacity: 0.82;
+}
+/* 68ch rather than the full column: past about 75 characters the eye starts
+   losing its place on the return sweep. */
+.post__body {
+  max-width: 68ch;
+  margin-top: clamp(2rem, 5vw, 3rem);
+  padding-top: clamp(1.5rem, 4vw, 2.5rem);
+  border-top: 1px solid rgba(var(--color-ink-rgb), 0.2);
+}
+.post__body p {
+  margin: 0 0 1.2em;
+  font-size: var(--fs-body);
+  line-height: 1.75;
+  opacity: 0.88;
+}
+.post__h2 {
+  margin: clamp(2rem, 4vw, 2.75rem) 0 0.6em;
+  font-family: var(--font-heading);
+  font-weight: 400;
+  font-size: calc(var(--fs-body) * 1.35);
+  line-height: 1.2;
+}
+.post__body > .post__h2:first-child {
+  margin-top: 0;
+}
+/* An unwritten post leaves this div empty, and its border-top would draw a
+   stray hairline under "Coming soon" with nothing beneath it. :empty needs
+   the div to hold no child nodes at all, whitespace included — hence
+   <div class="post__body"></div> on one line in the markup. The rule stops
+   applying by itself the moment anything is written into it. */
+.post__body:empty {
+  display: none;
+}
+
+/* ---------------------------------------------------
+   Products — packing cards
+--------------------------------------------------- */
+/* Renamed from .husbandry__*: the husbandry section these were built for
+   came off index.html long ago, and the name had stopped describing what
+   they are. Three tinted panels, each with a line icon above a centred
+   term and its description, as in the reference. */
+.packing__list {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+  gap: clamp(1rem, 2.5vw, 1.75rem);
+  margin: clamp(2rem, 5vw, 3rem) 0 0;
+}
+.packing__item {
+  padding: clamp(1.5rem, 3.5vw, 2.5rem) clamp(1.1rem, 2.5vw, 1.75rem);
+  background: rgba(var(--color-brown-rgb), 0.08);
+  text-align: center;
+}
+/* Column flex so the icon stacks over the term; the icon is inside the <dt>
+   rather than beside it because a <dl> using <div> wrappers may only
+   contain <dt> and <dd>, so a sibling <span> would be invalid markup. */
+.packing__term {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: clamp(0.6rem, 1.5vw, 0.9rem);
+  font-family: var(--font-heading);
+  font-size: clamp(1.05rem, 0.95rem + 0.4vw, 1.3rem);
+  line-height: 1.3;
+  letter-spacing: 0.04em;
+}
+/* Drawn rather than loaded: no icon in assets/ fitted vacuum, freezing or
+   cold storage, and inline SVG inherits currentColor and stays sharp at
+   any size without adding three more requests. */
+.packing__icon svg {
+  display: block;
+  width: clamp(2.1rem, 4vw, 2.75rem);
+  height: auto;
+  opacity: 0.75;
+}
+.packing__desc {
+  margin: clamp(0.7rem, 1.8vw, 1rem) 0 0;
+  font-size: calc(var(--fs-body) * 0.85);
+  line-height: 1.65;
+  opacity: 0.78;
+}
+
+/* ---------------------------------------------------
+   Products — cuts
+--------------------------------------------------- */
+.cuts {
+  padding-top: max(clamp(7rem, 14vw, 11rem), calc(var(--header-h) + 1.5rem));
+  padding-bottom: clamp(2.5rem, 7vw, 5rem);
+}
+
+.cuts__title {
+  margin-bottom: clamp(1.75rem, 4vw, 2.75rem);
+}
+
+/* Shop grid: one card per orderable item, so a whole bird, a cut bird and
+   a capon read as three things you can buy rather than two long articles
+   with the variants buried in a spec list. */
+.shop {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(255px, 1fr));
+  gap: clamp(1.25rem, 3vw, 2rem);
+}
+.card {
+  display: flex;
+  flex-direction: column;
+  background: rgba(255, 255, 255, 0.45);
+  border: 1px solid rgba(var(--color-ink-rgb), 0.16);
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+.card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 16px 30px -22px rgba(var(--color-ink-rgb), 0.9);
+}
+.card__media {
+  aspect-ratio: 1 / 1;
+  overflow: hidden;
+  background: rgba(var(--color-ink-rgb), 0.04);
+  border-bottom: 1px solid rgba(var(--color-ink-rgb), 0.12);
+}
+.card__media img {
+  width: 100%;
+  height: 100%;
+  /* contain, not cover: these are packaging shots and a cut-out bird —
+     cropping them to fill would clip the label and the tail. */
+  object-fit: contain;
+  mix-blend-mode: multiply;
+}
+/* column so the button can be pushed to the foot of every card, keeping
+   the row of buttons aligned however long the descriptions run */
+.card__body {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  padding: clamp(1.1rem, 2.5vw, 1.6rem);
+}
+.card__eyebrow {
+  font-family: var(--font-heading);
+  font-size: 0.9rem;
+  letter-spacing: 0.1em;
+  opacity: 0.6;
+  margin: 0 0 0.3em;
+}
+.card__name {
+  font-family: var(--font-heading);
+  font-weight: 400;
+  font-size: clamp(1.3rem, 1.1rem + 0.8vw, 1.7rem);
+  line-height: 1.2;
+  margin: 0 0 0.5em;
+}
+.card__desc {
+  font-size: var(--fs-body);
+  line-height: 1.6;
+  margin: 0 0 clamp(0.9rem, 2vw, 1.2rem);
+}
+.card__meta {
+  list-style: none;
+  margin: 0 0 clamp(1.1rem, 2.5vw, 1.5rem);
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4em;
+  font-size: 0.8rem;
+  letter-spacing: 0.04em;
+}
+.card__meta li {
+  padding: 0.25em 0.7em;
+  border: 1px solid rgba(var(--color-ink-rgb), 0.2);
+  border-radius: 999px;
+  opacity: 0.75;
+}
+/* margin-top: auto pins it to the bottom of the flex column */
+.card__btn {
+  margin-top: auto;
+  display: block;
+  padding: 0.7em 1.2em;
+  background: var(--color-ink);
+  color: var(--color-bg);
+  font-family: var(--font-heading);
+  font-size: var(--fs-body);
+  text-align: center;
+  text-decoration: none;
+  transition: opacity 0.25s ease;
+}
+.card__btn:hover,
+.card__btn:focus-visible { opacity: 0.82; }
+
+.packing {
+  padding-block: clamp(2.5rem, 7vw, 5rem);
+  border-top: 1px solid rgba(var(--color-ink-rgb), 0.25);
+}
+
+/* ---------------------------------------------------
+   Our Farm — gallery plates
+--------------------------------------------------- */
+/* Replaced a sticky 150vh video-morph stage and a JS slideshow with plain
+   figures. Everything is in the markup and in normal flow, so the copy is
+   crawlable and the page costs nothing to scroll. */
+/* First section on Our Farm now that the definition block above it is gone,
+   so it reserves clearance for the absolute header itself — the same max()
+   every other page's opening section uses. The border-top and the diamond
+   that sat on it came off with the promotion: as the topmost element on the
+   page they drew a stray hairline and dot across the very top. */
+/* ---------------------------------------------------
+   Our Farm — video
+--------------------------------------------------- */
+/* First section on the page now, so it carries the clearance for the
+   absolute header. aspect-ratio sizes the box, so the iframe needs no
+   percentage-padding hack and the space is reserved before the embed
+   loads — no layout shift. The embed is Facebook's video plugin, which
+   has no nocookie equivalent: unlike youtube-nocookie it sets cookies as
+   soon as the iframe loads, not on play. max-width must match the width=
+   asked for in the plugin URL in our-farm.html, and aspect-ratio must match
+   its height= — change the pair together or the player sits in a box the
+   wrong shape. */
+.video {
+  padding-top: max(clamp(7rem, 14vw, 11rem), calc(var(--header-h) + 1.5rem));
+  padding-bottom: clamp(2.5rem, 7vw, 5rem);
+}
+.video__frame {
+  aspect-ratio: 16 / 9;
+  max-width: 760px;
+  margin-inline: auto;
+  background: rgba(var(--color-ink-rgb), 0.06);
+}
+.video__frame iframe {
+  display: block;
+  width: 100%;
+  height: 100%;
+  border: 0;
+}
+
+/* The video section sits above this one now, so the clearance moved there
+   and the top rule comes back: it reads as a divider between sections
+   again rather than a stray line across the top of the page. */
+.gallery {
+  padding-block: clamp(2.5rem, 7vw, 5rem);
+  border-top: 1px solid rgba(var(--color-ink-rgb), 0.25);
+}
+/* Two cards, mirrored. Each is an arched photograph sitting flush on a
+   solid panel that carries the title and description. The pair is a mirror
+   image of itself: the arch sweeps off the top-right of the first card and
+   the top-left of the second, and the panels take different colours. Both
+   come from nth-child rather than modifier classes, so a third card would
+   simply continue the alternation.
+   The cap still exists only to stop auto-fit handing each card half of the
+   full 1493px column; margin-inline: auto then centres the pair in it. */
+.plate-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: clamp(1.75rem, 4vw, 3rem);
+  margin-top: clamp(2.5rem, 6vw, 4rem);
+  max-width: 1200px;
+  margin-inline: auto;
+}
+/* Column flex so the panel can take flex: 1 and the two panels finish level
+   even though one description runs eight words longer than the other. */
+.plate {
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+}
+
+/* 4:3. Both sources are 1100x1556 portrait, so this crops 731px off the
+   height, centred, giving a window of 366-1190. That is the shortest ratio
+   that still holds both subjects whole — the rooster runs 490-1090 and the
+   chicks 380-880, and at 3:2 the chicks' heads start getting cut, so going
+   shorter than this needs a per-photo object-position.
+   height: auto is load-bearing, not tidying. These <img> carry width
+   and height attributes for CLS, and HTML maps those to presentational
+   hints for the width and height properties. width: 100% overrides the
+   width hint, but with no height declared the height hint survives at its
+   full 1556px, and once both dimensions are definite aspect-ratio is
+   ignored. The cards rendered as 466x1556 strips. */
+.plate img {
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 4 / 3;
+  object-fit: cover;
+  background: rgba(var(--color-ink-rgb), 0.04);
+}
+/* The arch. Percentages, not lengths, so the curve keeps its proportion at
+   every card width instead of swallowing the photo on a phone. The vertical
+   figure tracks the crop so the arch stays near-circular whatever the photo
+   does: it is 50% of the width across, and the vertical figure is whatever
+   makes that same distance in height — 66% of a 4:3 box. (It was 38% at
+   3:4, 50% at 1:1.) */
+.plate:nth-child(odd) img {
+  border-radius: 0 50% 0 0 / 0 66% 0 0;
+}
+.plate:nth-child(even) img {
+  border-radius: 50% 0 0 0 / 66% 0 0 0;
+}
+/* The chicks sit high in their frame: centred, the 4:3 window opens at y366
+   and takes the top off the darker one's comb while leaving a third of the
+   card as bare ground. 25% moves the window up to y183-1008, which clears
+   both heads and still holds their feet. */
+.plate:nth-child(even) img {
+  object-position: 50% 25%;
+}
+
+.plate figcaption {
+  flex: 1;
+  padding: clamp(1.4rem, 3vw, 2.25rem);
+  color: var(--color-bg);
+}
+.plate:nth-child(odd) figcaption {
+  background: var(--color-brown-deep);
+}
+.plate:nth-child(even) figcaption {
+  background: var(--color-promo);
+}
+/* Card text runs at 70% of its former size. Kept as a calc() on the
+   original values rather than hard-coded smaller ones, so the 30%
+   reduction stays visible and the body size still tracks --fs-body. */
+.plate__title {
+  font-family: var(--font-heading);
+  font-weight: 400;
+  font-size: calc(clamp(1.15rem, 1rem + 0.7vw, 1.5rem) * 0.7);
+  line-height: 1.25;
+  letter-spacing: 0.03em;
+  margin: 0 0 0.6em;
+}
+/* Left at full opacity on both panels. Knocking it back to 0.85 for
+   hierarchy would drop the brown panel under AA, and the heading font and
+   size already separate the two. */
+.plate__desc {
+  font-size: calc(var(--fs-body) * 0.7);
+  line-height: 1.65;
+  margin: 0;
+}
+
+/* ---------------------------------------------------
+   Our Farm — steading rows
+--------------------------------------------------- */
+/* Was a 720vh pinned newspaper-dissolve sequence driven by scroll maths,
+   then four alternating photo/text rows. Now four typographic columns
+   divided by hairlines — no photographs at all. That also took
+   lake.webp (7.3MB) and feed.webp (6.2MB) off this page. */
+.farm {
+  padding-block: clamp(2.5rem, 7vw, 5rem);
+  border-top: 1px solid rgba(var(--color-ink-rgb), 0.25);
+}
+/* The heading block is centred over the columns, matching the reference;
+   .section-title--center supplies the rule beneath it. */
+.farm .kicker {
+  text-align: center;
+}
+/* The air between columns is a real column-gap, not padding on the columns.
+   It used to be padding, with the outer two dropping their outside padding
+   to sit flush with the content column — which left columns 1 and 4 one
+   padding-unit wider than 2 and 3. Invisible while these were text; obvious
+   once each carried a photo stretched to width: 100%. With a gap every
+   column is exactly 1fr, the outer edges still sit flush, and the hairline
+   becomes a pseudo-element centred in the gap. --steading-gap equals the
+   old doubled padding, so the gutter reads the same width as before. */
+.steading {
+  --steading-gap: clamp(2rem, 4.4vw, 4rem);
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  column-gap: var(--steading-gap);
+  margin-top: clamp(2rem, 5vw, 3rem);
+}
+.steading__row {
+  position: relative;
+}
+.steading__row + .steading__row::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: calc(var(--steading-gap) / -2);
+  width: 1px;
+  background: rgba(var(--color-ink-rgb), 0.2);
+}
+
+/* Two columns, then one. The divider has to follow the wrap: at two across
+   items 1 and 3 start a row, so a divider on them would hang off the left
+   edge; in a single column it would be a stray vertical line, so it becomes
+   a rule above each entry. */
+@media (max-width: 999px) {
+  .steading {
+    --steading-gap: clamp(1.5rem, 4vw, 2.5rem);
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    row-gap: clamp(2rem, 5vw, 3rem);
   }
-  .footer__info-pair {
-    align-self: stretch;
-    flex-direction: row;
-    justify-content: space-between;
-    align-items: flex-start;
-    gap: 1rem;
+  .steading__row + .steading__row:nth-child(odd)::before {
+    content: none;
   }
+}
+@media (max-width: 599px) {
+  .steading {
+    grid-template-columns: minmax(0, 1fr);
+    row-gap: 0;
+  }
+  .steading__row + .steading__row::before {
+    content: none;
+  }
+  .steading__row + .steading__row {
+    margin-top: clamp(1.5rem, 5vw, 2rem);
+    padding-top: clamp(1.5rem, 5vw, 2rem);
+    border-top: 1px solid rgba(var(--color-ink-rgb), 0.2);
+  }
+}
+
+/* Re-added for the two columns that now carry a photograph. height: auto
+   alongside aspect-ratio because the width/height attributes map to
+   presentational hints, and without it the 506px height hint would stand
+   and aspect-ratio would be ignored. The sources are 16:9, so this frames
+   them at their own ratio and crops nothing. */
+.steading__photo {
+  margin: 0 0 clamp(0.9rem, 2vw, 1.3rem);
+}
+.steading__photo img {
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 16 / 9;
+  object-fit: cover;
+  background: rgba(var(--color-ink-rgb), 0.04);
+}
+
+/* Smaller than it was as a full-width row: these titles now sit in a
+   ~350px column, where the old 30px would run to three lines. */
+.steading__title {
+  font-family: var(--font-heading);
+  font-weight: 400;
+  font-size: clamp(1.1rem, 0.95rem + 0.5vw, 1.4rem);
+  line-height: 1.25;
+  margin: 0 0 0.5em;
+  padding-bottom: 0.4em;
+  border-bottom: 1px solid rgba(var(--color-ink-rgb), 0.2);
+}
+.steading__text p {
+  font-size: calc(var(--fs-body) * 0.85);
+  line-height: 1.7;
+  margin: 0;
+}
+/* Centred under the columns, matching the centred heading above them.
+   Scoped to .farm because .link-more is shared with index.html and
+   products.html, where it stays left-aligned. Centred by auto margins on a
+   fit-content block rather than text-align on .wrap, which would also pull
+   the four columns' paragraphs to centre. */
+.farm .link-more {
+  display: block;
+  width: fit-content;
+  margin-inline: auto;
+}
+
+
+/* ---------------------------------------------------
+   Design pass — estate furniture
+   Decoration that earns its place on a text-heavy page: ruled ornaments,
+   mounted photographs, drop caps and almanac numerals. All CSS — no extra
+   images, nothing animated.
+--------------------------------------------------- */
+
+/* --- 1. Ornamented section rules -------------------
+   The sections already rule off with a hairline plus an offset shadow (a
+   ledger double-rule). A small lozenge centred on that rule is the
+   ornament an estate board or an old almanac would put there. Solid
+   rather than knocked out, so it sits correctly on tinted and untinted
+   sections alike.
+   .offer is deliberately not in this list: the ornament was removed from
+   that section by request, and it has no top hairline to sit on anyway
+   while it butts onto the banner's colour band. */
+.packing,
+.gallery,
+.farm {
+  position: relative;
+}
+.packing::before,
+.gallery::before,
+.farm::before {
+  content: '';
+  position: absolute;
+  top: -4px;
+  left: 50%;
+  width: 8px;
+  height: 8px;
+  background: var(--color-ink);
+  opacity: 0.45;
+  transform: translateX(-50%) rotate(45deg);
+}
+
+/* --- 2. Alternating paper tint ---------------------
+   A flat cream page reads as a document. A barely-there warm wash on
+   alternate sections gives the eye a rhythm to follow down the page.
+   .promise is left out so it reads as a plain break between the hero above
+   it and the striped primer below. */
+.gallery {
+  background: rgba(var(--color-brown-rgb), 0.045);
+}
+
+/* --- 3. Flourish beneath centred titles ------------ */
+.section-title--center {
+  position: relative;
+  padding-bottom: 0.5em;
+}
+.section-title--center::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  bottom: 0;
+  width: clamp(60px, 9vw, 110px);
+  height: 1px;
+  background: currentColor;
+  opacity: 0.4;
+  transform: translateX(-50%);
+}
+
+/* --- 5. Almanac numerals ---------------------------
+   Roman numerals against each steading row, the way a farming almanac or an
+   estate inventory numbers its entries. The packing cards used to carry
+   these too; they lost them when they became icon-topped panels, where a
+   numeral would have sat beside a centred icon. */
+.steading__row .steading__title::before {
+  font-family: var(--font-heading);
+  opacity: 0.45;
+  margin-right: 0.5em;
+}
+.steading { counter-reset: steading; }
+.steading__row { counter-increment: steading; }
+.steading__row .steading__title::before { content: counter(steading, upper-roman) '.'; }
+
+
+/* ---------------------------------------------------
+   Contact
+   The reference's structure — directory columns beside a photograph, with
+   the page title repeated at display scale and cropped at the foot — on
+   the site's own cream ground.
+--------------------------------------------------- */
+.contact {
+  position: relative;
+  /* overflow: hidden went with the display wordmark it existed to crop */
+  padding-top: max(clamp(7rem, 14vw, 11rem), calc(var(--header-h) + 1.5rem));
+  /* the wordmark's top margin used to hold the section off the footer */
+  padding-bottom: clamp(3rem, 8vw, 6rem);
+}
+.contact__head {
+  margin-bottom: clamp(1.75rem, 4vw, 2.75rem);
+}
+.contact__h1 {
+  font-family: var(--font-heading);
+  font-weight: 400;
+  font-size: clamp(1.8rem, 1.3rem + 2vw, 3rem);
+  line-height: 1.15;
+  margin: 0;
+}
+
+/* Details columns beside a single photograph, as in the reference. */
+.contact__layout {
+  display: grid;
+  /* back to the original proportions — the photo was never too big, it
+     was starting too low. The heading now sits inside .contact__main, so
+     this row begins at the kicker and the photo starts level with it. */
+  grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr);
+  gap: clamp(2rem, 5vw, 4rem);
+  align-items: start;
+}
+@media (max-width: 899px) {
+  .contact__layout { grid-template-columns: 1fr; }
+}
+/* Stacked directory on the left, a Follow column beside it — the
+   arrangement in the reference. auto-fit is wrong here: the two halves
+   have fixed roles and very different content lengths, so they get
+   explicit tracks instead of being asked to share equally. */
+.contact__cols {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, auto);
+  gap: clamp(1.75rem, 5vw, 4rem);
+  align-items: start;
+}
+@media (max-width: 599px) {
+  .contact__cols { grid-template-columns: 1fr; }
+}
+/* Three entries, one per row. */
+.contact__directory {
+  display: grid;
+  gap: clamp(1.5rem, 3vw, 2.25rem);
+}
+.contact__follow {
+  min-width: 7rem;
+}
+.contact__social {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 0.4em;
+  font-size: var(--fs-body);
+  line-height: 1.6;
+}
+/* Small-caps label over its value, set tight — the directory setting the
+   reference uses for its enquiry addresses. */
+.contact__label {
+  font-family: var(--font-heading);
+  font-size: 0.95rem;
+  letter-spacing: 0.1em;
+  opacity: 0.6;
+  margin: 0 0 0.5em;
+}
+.contact__value {
+  font-size: var(--fs-body);
+  line-height: 1.6;
+  margin: 0;
+}
+.contact__link {
+  text-decoration: underline;
+  text-underline-offset: 0.22em;
+  text-decoration-thickness: 1px;
+}
+.contact__link:hover { opacity: 0.65; }
+.contact__sub {
+  display: block;
+  margin-top: 0.35em;
+  font-size: 0.85rem;
+  letter-spacing: 0.06em;
+  /* 0.65, not the 0.55 this carried while the page was dark. Cream at
+     0.55 on ink measured 5.9:1; the same figure inverted is ink at 0.55
+     on cream, which is only 4.1:1 and misses AA. The eye reads the two
+     as equally dim, so the fix is not visible — it just has to be done
+     when a tint flips ground. */
+  opacity: 0.65;
+}
+.contact__photo { margin: 0; }
+.contact__photo img {
+  width: 100%;
+  height: auto;
+  aspect-ratio: 4 / 5;
+  object-fit: cover;
+  /* 50% on a non-square box gives an ellipse, not a circle — the 4:5
+     portrait ratio is what makes it read as an upright oval. object-fit
+     crops to the box first, then this masks the corners, so the subject
+     needs to sit centrally or the mask will clip it. */
+  border-radius: 50%;
+}
+/* .contact__main holds the columns and the note together in the layout's
+   left cell, so the paragraph sits beside the photograph rather than
+   below the whole grid — the arrangement the reference uses. */
+.contact__note {
+  /* no max-width needed any more: the grid cell is the measure */
+  margin: clamp(2rem, 5vw, 3.5rem) 0 0;
+  font-size: var(--fs-body);
+  line-height: 1.75;
+  opacity: 0.75;
+}
+
+
+/* ---------------------------------------------------
+   Legal pages
+--------------------------------------------------- */
+.legal {
+  padding-top: max(clamp(7rem, 14vw, 11rem), calc(var(--header-h) + 1.5rem));
+  padding-bottom: clamp(3rem, 8vw, 6rem);
+}
+.legal .wrap { max-width: 72ch; }
+.legal__updated {
+  margin: clamp(0.75rem, 2vw, 1rem) 0 0;
+  font-size: 0.85rem;
+  letter-spacing: 0.04em;
+  opacity: 0.6;
+}
+.legal__h2 {
+  font-family: var(--font-heading);
+  font-weight: 400;
+  font-size: clamp(1.2rem, 1rem + 0.8vw, 1.55rem);
+  line-height: 1.25;
+  margin: clamp(2rem, 4vw, 2.75rem) 0 0.5em;
+}
+.legal p,
+.legal__list {
+  font-size: var(--fs-body);
+  line-height: 1.75;
+  margin: 0;
+}
+.legal__list {
+  margin-top: 0.6em;
+  padding-left: 1.2em;
+  display: grid;
+  gap: 0.4em;
+}
+.legal a {
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
+}
+
+/* ---------------------------------------------------
+   Cookie consent banner
+--------------------------------------------------- */
+/* Injected by js/main.js, so it exists on every page without living in seven
+   files. --color-promo because a cream bar on a cream page is easy to miss,
+   and cream on it measures 8.58:1.
+   Both buttons are deliberately identical in size, weight and colour: making
+   Decline quieter than Accept is the standard way of rigging this, and it is
+   not a real choice. */
+.consent {
+  position: fixed;
+  inset: auto 0 0 0;
+  z-index: 100;
+  background: var(--color-promo);
+  color: var(--color-bg);
+  box-shadow: 0 -6px 24px rgba(var(--color-ink-rgb), 0.25);
+}
+.consent__inner {
+  max-width: var(--content-max);
+  margin-inline: auto;
+  padding: clamp(1rem, 2.5vw, 1.5rem) var(--side-pad);
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: clamp(1rem, 3vw, 2.5rem);
+}
+/* flex-basis in rem so the text keeps its own line until there is genuinely
+   room for the buttons beside it, then they drop below rather than squeezing. */
+.consent__copy {
+  flex: 1 1 22rem;
+}
+.consent__title {
+  margin: 0 0 0.3em;
+  font-family: var(--font-heading);
+  font-size: var(--fs-body);
+  letter-spacing: 0.08em;
+}
+.consent__text {
+  max-width: 70ch;
+  margin: 0;
+  font-size: calc(var(--fs-body) * 0.85);
+  line-height: 1.6;
+}
+.consent__text a {
+  color: inherit;
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
+}
+.consent__actions {
+  flex: none;
+  display: flex;
+  gap: 0.75rem;
+}
+.consent__btn {
+  padding: 0.6em 1.6em;
+  font-family: var(--font-heading);
+  font-size: calc(var(--fs-body) * 0.9);
+  color: inherit;
+  background: transparent;
+  border: 1px solid currentColor;
+  cursor: pointer;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+.consent__btn:hover,
+.consent__btn:focus-visible {
+  background: var(--color-bg);
+  color: var(--color-promo);
+}
+
+/* ---------------------------------------------------
+   Video facade (click to load)
+--------------------------------------------------- */
+/* Stands in for the Facebook iframe until someone clicks, so the embed — and
+   its cookies — are never fetched for people who do not watch. A <button>
+   rather than a div: it has to be reachable and operable by keyboard, and the
+   label is what a screen reader announces. */
+.video__facade {
+  position: relative;
+  display: block;
+  width: 100%;
+  height: 100%;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--color-bg);
+  cursor: pointer;
+  overflow: hidden;
+}
+.video__facade:focus-visible {
+  outline: 2px solid var(--color-ink);
+  outline-offset: 3px;
+}
+.video__poster {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.video__play {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  display: grid;
+  place-items: center;
+  width: clamp(3.25rem, 7vw, 4.5rem);
+  aspect-ratio: 1;
+  border: 2px solid var(--color-bg);
+  border-radius: 50%;
+  background: rgba(var(--color-ink-rgb), 0.5);
+}
+/* A CSS triangle rather than an icon file or a glyph: no extra request, and no
+   dependence on a font that may not carry the character. */
+.video__play::after {
+  content: '';
+  border-left: 0.9rem solid var(--color-bg);
+  border-block: 0.55rem solid transparent;
+  margin-left: 0.22rem;
+}
+.video__label {
+  position: absolute;
+  inset: auto 0 0 0;
+  display: grid;
+  gap: 0.15em;
+  padding: clamp(0.8rem, 2vw, 1.2rem);
+  font-family: var(--font-heading);
+  font-size: calc(var(--fs-body) * 0.95);
+  text-align: left;
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.78), rgba(0, 0, 0, 0));
+}
+.video__note {
+  font-family: var(--font-body);
+  font-size: calc(var(--fs-body) * 0.72);
+  opacity: 0.9;
+}
+.video__facade:hover .video__play {
+  background: rgba(var(--color-ink-rgb), 0.72);
+}
+
+/* ---------------------------------------------------
+   404
+--------------------------------------------------- */
+.notfound__text {
+  max-width: 48ch;
+  margin: clamp(1rem, 2.5vw, 1.5rem) 0 0;
+  font-size: var(--fs-body);
+  line-height: 1.7;
+}
+.notfound__links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: clamp(0.75rem, 2vw, 1.25rem);
+  margin-top: clamp(1.75rem, 4vw, 2.5rem);
+}
+.notfound__links a {
+  padding: 0.55em 1.3em;
+  border: 1px solid rgba(var(--color-ink-rgb), 0.35);
+  border-radius: 999px;
+  font-family: var(--font-heading);
+  font-size: var(--fs-body);
+  text-decoration: none;
+  transition: background-color 0.25s ease;
+}
+.notfound__links a:hover,
+.notfound__links a:focus-visible {
+  background-color: rgba(var(--color-ink-rgb), 0.08);
 }
