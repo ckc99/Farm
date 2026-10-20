@@ -672,10 +672,15 @@ h1, h2, p { margin: 0; }
    section and the footer.
    .primer counts even though its base colour IS the page cream: its stripes
    stop at the section edge, so the margin reads as a gap where the pattern
-   runs out. :has() rather than a class on <body> so this stays right
-   wherever these sections are moved to. */
+   runs out. .gallery is here because it carries a warm tint and is now the
+   last section on our-farm.html. :has() rather than a class on <body> so
+   this stays right wherever these sections are moved to — which is the
+   whole point: the previous version of this keyed off .farm existing at all
+   rather than being last, and silently stopped being true the moment .farm
+   moved up the page. */
 body:has(main > :last-child.journal) .site-footer,
-body:has(main > :last-child.primer) .site-footer {
+body:has(main > :last-child.primer) .site-footer,
+body:has(main > :last-child.gallery) .site-footer {
   margin-top: 0;
 }
 
@@ -701,13 +706,6 @@ body:has(main > :last-child.primer) .site-footer {
   position: relative;
   z-index: 1;
 }
-/* The Farm section's pinned background already releases into plain page
-   background right at its own edge — this margin on top of that reads as
-   a second, redundant cream gap before the footer, so drop it here only. */
-main:has(> .farm) + .site-footer {
-  margin-top: 0;
-}
-
 /* Brand mark, pages, then the contact block. Three explicit tracks rather
    than auto-fit: the columns carry very different amounts of text, so
    equal shares would leave Explore stranded beside a much taller block. */
@@ -1142,13 +1140,20 @@ main:has(> .farm) + .site-footer {
 --------------------------------------------------- */
 /* .site-header is position: absolute and out of flow, so the first section
    on every page reserves its own clearance — same pattern as .video. */
+/* Centred throughout, by request.
+   text-align alone is not enough: every block in here is capped at a reading
+   measure, and a capped block stays pinned to the left of the column with its
+   text centring inside it — which reads as a misalignment rather than a
+   choice. Each one needs margin-inline: auto as well, so the measure itself
+   is centred and the text centres within it. */
 .post {
   padding-top: max(clamp(7rem, 14vw, 11rem), calc(var(--header-h) + 2rem));
   padding-bottom: clamp(3rem, 8vw, 6rem);
+  text-align: center;
 }
 .post__title {
   max-width: 20ch;
-  margin: 0.2em 0 0;
+  margin: 0.2em auto 0;
   font-family: var(--font-heading);
   font-weight: 400;
   font-size: clamp(2rem, 1.2rem + 3vw, 3.6rem);
@@ -1156,7 +1161,7 @@ main:has(> .farm) + .site-footer {
 }
 .post__lede {
   max-width: 54ch;
-  margin: clamp(1rem, 2.5vw, 1.5rem) 0 0;
+  margin: clamp(1rem, 2.5vw, 1.5rem) auto 0;
   font-size: calc(var(--fs-body) * 1.1);
   font-style: italic;
   line-height: 1.6;
@@ -1166,17 +1171,60 @@ main:has(> .farm) + .site-footer {
    losing its place on the return sweep. */
 .post__body {
   max-width: 68ch;
+  margin-inline: auto;
   margin-top: clamp(2rem, 5vw, 3rem);
   padding-top: clamp(1.5rem, 4vw, 2.5rem);
   border-top: 1px solid rgba(var(--color-ink-rgb), 0.2);
 }
+/* Justified, by request: the body sets flush on both edges while the kicker,
+   title and lede above it stay centred.
+   hyphens is not optional here. Justification works by stretching the word
+   spaces until the line fills the measure, so without hyphenation a long word
+   that will not fit leaves a line of wide gaps behind it. Letting the browser
+   break words keeps the spacing even. It needs lang on <html>, which this
+   page has. */
 .post__body p {
   margin: 0 0 1.2em;
   font-size: var(--fs-body);
   line-height: 1.75;
   opacity: 0.88;
+  text-align: justify;
+  hyphens: auto;
 }
+/* a { color: inherit } globally, so without this a link in the article body
+   is invisible: same colour, no underline, nothing to click towards. */
+.post__body a {
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
+  text-decoration-thickness: 1px;
+}
+.post__body a:hover {
+  opacity: 0.65;
+}
+/* The article's only list. Matches .post__body p for size and rhythm, so a
+   list reads as part of the prose rather than as a pulled-out box. */
+.post__list {
+  margin: 0 0 1.2em;
+  /* Markers are back. They were dropped while this list was centred, where a
+     marker sits at a fixed left offset and floats away from the line it
+     belongs to. The list is left-aligned again, so the bullet lands where it
+     should — and the indent puts it on the same left edge as the justified
+     paragraphs above and below. */
+  padding-left: 1.2em;
+  display: grid;
+  gap: 0.5em;
+  text-align: left;
+  font-size: var(--fs-body);
+  line-height: 1.75;
+  opacity: 0.88;
+}
+/* left, not justify. A one-line heading under text-align: justify is its own
+   last line, and last lines are not stretched — so it would come out left
+   anyway. But a heading that WRAPS on a narrow screen would have its first
+   line stretched edge to edge, which is the one place justification looks
+   broken. Saying left outright makes that impossible. */
 .post__h2 {
+  text-align: left;
   margin: clamp(2rem, 4vw, 2.75rem) 0 0.6em;
   font-family: var(--font-heading);
   font-weight: 400;
@@ -1250,6 +1298,12 @@ main:has(> .farm) + .site-footer {
   padding-bottom: clamp(2.5rem, 7vw, 5rem);
 }
 
+/* The lede is now the last thing before the shop grid, so it carries the
+   space the title used to — .cuts__title held that margin and is gone, class
+   and rule together, rather than left behind matching nothing. */
+/* .shop has no top margin of its own, so the heading has to hold the cards
+   off itself. This is back because the lede that briefly carried that space
+   has been removed. */
 .cuts__title {
   margin-bottom: clamp(1.75rem, 4vw, 2.75rem);
 }
@@ -1374,15 +1428,130 @@ main:has(> .farm) + .site-footer {
    asked for in the plugin URL in our-farm.html, and aspect-ratio must match
    its height= — change the pair together or the player sits in a box the
    wrong shape. */
+/* No header clearance here any more: .naming is the first section on the page
+   now and carries it instead. .site-header is position: absolute and out of
+   flow, so whichever section comes first has to reserve the room by hand. */
+/* A dark green band. Everything in here inherits cream, which measures
+   8.58:1 on this green — and the stamp finally reads as a stamp, because
+   light paper on a dark ground is the contrast a stamp actually has.
+   If this colour changes, --perf-fill on .video__stamp has to change with
+   it; see the note there. */
 .video {
-  padding-top: max(clamp(7rem, 14vw, 11rem), calc(var(--header-h) + 1.5rem));
-  padding-bottom: clamp(2.5rem, 7vw, 5rem);
+  padding-block: clamp(2.5rem, 7vw, 5rem);
+  background: var(--color-promo);
+  color: var(--color-bg);
 }
+/* Label beside the picture, not a heading block above it. The pair is
+   centred as a group, so the label sits against the stamp wherever the
+   stamp ends up.
+   row-reverse puts the label on the RIGHT while leaving it first in the
+   markup, where a heading belongs — it names the section, so it should be
+   announced before the thing it names rather than after it. Doing this with
+   `order` instead would work too; row-reverse says the intent in one
+   property and keeps the media query below able to override it outright. */
+.video__layout {
+  display: flex;
+  flex-direction: row-reverse;
+  align-items: center;
+  justify-content: center;
+  gap: clamp(0.9rem, 2.5vw, 2rem);
+}
+/* writing-mode, not transform: rotate(). A rotated element keeps its
+   upright box in the layout, so the flex row would still reserve the
+   label's full horizontal width and leave a gap beside the video.
+   vertical-rl changes the box itself, and it turns Latin glyphs a quarter
+   turn clockwise on its own — which is the direction the reference reads. */
+.video__side {
+  flex: none;
+  margin: 0;
+  writing-mode: vertical-rl;
+  font-family: var(--font-heading);
+  font-weight: 400;
+  font-size: clamp(1.05rem, 0.8rem + 1.1vw, 1.9rem);
+  line-height: 1;
+  letter-spacing: 0.12em;
+  white-space: nowrap;
+}
+/* Under 600px the label is taller than the picture is wide, so it stops
+   being a margin note and starts being a column. It lies back down and sits
+   above the video. */
+@media (max-width: 599px) {
+  .video__layout {
+    /* column, not column-reverse: stacked, the heading goes back on top. */
+    flex-direction: column;
+    gap: clamp(0.75rem, 3vw, 1rem);
+  }
+  .video__side {
+    writing-mode: horizontal-tb;
+    letter-spacing: 0.1em;
+  }
+}
+/* Sits under the mount at the size of a plate caption. It repeats what the
+   play button already says about Facebook, deliberately: the button's note is
+   only read by someone who has got as far as looking at the button. */
+.video__caption {
+  max-width: 46ch;
+  margin: clamp(1rem, 2.5vw, 1.4rem) auto 0;
+  font-size: calc(var(--fs-body) * 0.85);
+  line-height: 1.6;
+  text-align: center;
+  opacity: 0.7;
+}
+/* A perforated stamp mount around the video.
+   The scallops are DRAWN, not cut: four tiled radial-gradients painting
+   page-cream half-circles over the paper colour, so they only read as holes
+   because .video sits on the flat page background. Real holes would mean
+   mask with mask-composite: intersect, where the -webkit- fallbacks still
+   take different keywords; this works everywhere and costs one rule. If this
+   section ever gets a background of its own, change --perf-fill with it or
+   the perforations turn back into dots.
+   Paper is --color-footer rather than white: white measures 1.07:1 against
+   the page and the whole mount would vanish. This reads at 1.46:1 — present,
+   not loud.
+   The mount owns the width. 560 is the image; max-width adds the paper on
+   top so the picture inside stays exactly 560 under border-box. */
+.video__stamp {
+  --perf: clamp(8px, 1.6vw, 13px);
+  --perf-step: calc(var(--perf) * 1.85);
+  /* THE one value tied to the section background. These scallops are painted,
+     not cut, so they only read as holes while they match what is behind the
+     stamp. .video is dark green, so this is dark green. Set it to page cream
+     again the day this section goes back to cream. */
+  --perf-fill: var(--color-promo);
+  --paper: calc(var(--perf) * 1.15);
+  max-width: calc(560px + 2 * var(--paper));
+  /* no margin-inline: auto. As a flex item that would eat all the free space
+     in the row and shove the label out to the far left edge; the row's
+     justify-content does the centring instead. min-width lets it shrink
+     past its content on a narrow screen. */
+  min-width: 0;
+  padding: var(--paper);
+  background:
+    radial-gradient(circle calc(var(--perf) / 2) at 50% 0, var(--perf-fill) 97%, transparent 100%)
+      50% 0 / var(--perf-step) var(--perf-step) repeat-x,
+    radial-gradient(circle calc(var(--perf) / 2) at 50% 100%, var(--perf-fill) 97%, transparent 100%)
+      50% 100% / var(--perf-step) var(--perf-step) repeat-x,
+    radial-gradient(circle calc(var(--perf) / 2) at 0 50%, var(--perf-fill) 97%, transparent 100%)
+      0 50% / var(--perf-step) var(--perf-step) repeat-y,
+    radial-gradient(circle calc(var(--perf) / 2) at 100% 50%, var(--perf-fill) 97%, transparent 100%)
+      100% 50% / var(--perf-step) var(--perf-step) repeat-y,
+    var(--color-footer);
+}
+/* 560, down from 760. 560x315 is exactly 16:9, where 760 had to round its
+   height to 428 (760 x 9/16 is 427.5) and asked Facebook for a box half a
+   pixel off the ratio this box holds.
+   outline, not border: a border would come out of the 560 under border-box
+   and leave Facebook rendering into a box 2px narrower than the one it was
+   asked for. An outline draws on the paper outside the box and changes no
+   geometry — which is also where a stamp's printed frame line belongs. */
 .video__frame {
   aspect-ratio: 16 / 9;
-  max-width: 760px;
-  margin-inline: auto;
   background: rgba(var(--color-ink-rgb), 0.06);
+  /* outline, not border: a border would come out of the 560 under border-box
+     and leave Facebook rendering into a box 2px narrower than the one it was
+     asked for. An outline draws on the paper outside the box and changes no
+     geometry — which is also where a stamp's printed frame line belongs. */
+  outline: 1px solid rgba(var(--color-ink-rgb), 0.18);
 }
 .video__frame iframe {
   display: block;
@@ -1490,6 +1659,93 @@ main:has(> .farm) + .site-footer {
   font-size: calc(var(--fs-body) * 0.7);
   line-height: 1.65;
   margin: 0;
+}
+
+/* ---------------------------------------------------
+   Our Farm — naming
+--------------------------------------------------- */
+/* Explains the brand name and what the bird is. The glossary is a <dl>: these
+   really are terms and their definitions, and a screen reader announces the
+   pairing. The <div> wrappers are what lets each pair be one grid row — a <dl>
+   permits them, but each one may contain ONLY dt/dd. */
+/* The photograph is a BAND BELOW THE COPY, not a backdrop behind it.
+   It used to be a full-bleed background with the type sitting on top, which
+   never worked: the lit eggs and any warm type land at similar luminance, so
+   the text needed an outline to survive, and an outlined glyph reads as a
+   sticker rather than as typography. Separating the two means the copy gets
+   plain ink on cream at 17.5:1 with no shadow at all, and the photograph gets
+   to be a photograph instead of a surface to be shouted over.
+   The band sits in the content column, not full bleed, so the page gutter
+   runs past it on both sides. */
+.naming {
+  padding-top: max(clamp(7rem, 14vw, 11rem), calc(var(--header-h) + 1.5rem));
+  text-align: center;
+}
+/* Inside .wrap, so it inherits the content column and the page gutter stays
+   open on both sides. The bottom margin is the section's only bottom spacing
+   — .naming itself has none, so this is what separates the band from the
+   video below it. */
+.naming__band {
+  margin: clamp(2.5rem, 6vw, 4rem) 0 clamp(3rem, 8vw, 5.5rem);
+  height: clamp(12rem, 28vw, 22rem);
+  background: rgba(var(--color-ink-rgb), 0.06);
+}
+/* Both dimensions set here, so the width/height attributes on the <img> are
+   safe to carry: they reserve the right box before the file lands without
+   fighting the CSS for the final size. */
+.naming__band img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+/* The question the lede answers, sitting between the h1 and that answer.
+   Not .section-title: that is sized for an h1 and would compete with the one
+   directly above it. This is the size .post__h2 runs at — clearly a heading,
+   clearly subordinate. */
+.naming__sub {
+  margin: clamp(0.8rem, 2vw, 1.1rem) 0 0;
+  font-family: var(--font-heading);
+  font-weight: 400;
+  font-size: calc(var(--fs-body) * 1.35);
+  line-height: 1.25;
+}
+/* margin-inline: auto, or the measure-capped blocks stay left while their
+   text centres inside them — which reads as a misalignment, not a choice. */
+.naming__lede {
+  max-width: 54ch;
+  margin: clamp(1.25rem, 3vw, 2rem) auto 0;
+  font-size: calc(var(--fs-body) * 1.05);
+  line-height: 1.7;
+}
+.naming__text {
+  max-width: 54ch;
+  margin: clamp(1rem, 2.5vw, 1.5rem) auto 0;
+  font-size: var(--fs-body);
+  line-height: 1.7;
+}
+.naming__terms {
+  max-width: 48ch;
+  margin: clamp(1.75rem, 4vw, 2.5rem) auto 0;
+}
+/* Stacked, not a term/definition column pair: centred text in a two-column
+   grid leaves a ragged gutter down the middle. */
+.naming__term {
+  padding-block: clamp(0.8rem, 2vw, 1.1rem);
+  border-top: 1px solid rgba(var(--color-ink-rgb), 0.2);
+}
+.naming__term:last-child {
+  border-bottom: 1px solid rgba(var(--color-ink-rgb), 0.2);
+}
+.naming__term dt {
+  font-family: var(--font-heading);
+  font-size: var(--fs-body);
+  letter-spacing: 0.04em;
+}
+.naming__term dd {
+  margin: 0.35em 0 0;
+  font-size: calc(var(--fs-body) * 0.9);
+  line-height: 1.6;
 }
 
 /* ---------------------------------------------------
@@ -1643,6 +1899,20 @@ main:has(> .farm) + .site-footer {
   background: var(--color-ink);
   opacity: 0.45;
   transform: translateX(-50%) rotate(45deg);
+}
+
+/* The colour change out of the green band IS the divider. A hairline there
+   would be a dark line drawn on the edge of a dark band, and the lozenge
+   sits at top: -4px, which puts half an ink ornament inside the green where
+   it cannot be seen. Written for whichever section follows .video, so it
+   keeps working when the order changes — it currently follows with .farm. */
+.video + .gallery,
+.video + .farm {
+  border-top: none;
+}
+.video + .gallery::before,
+.video + .farm::before {
+  content: none;
 }
 
 /* --- 2. Alternating paper tint ---------------------

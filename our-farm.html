@@ -38,7 +38,7 @@
   "url": "https://free-range-farm.com/",
   "logo": "https://free-range-farm.com/assets/brownlogo.png",
   "image": "https://free-range-farm.com/assets/OGtag.png",
-  "description": "Free Range Farm — premium free-range and capon chicken farmed in Kampar, delivered fresh within the Klang area.",
+  "description": "Our free range chicken farm in Kampar, Perak — cage-free birds on open ground, a mountain-fed lake and a feed we mix ourselves.",
   "priceRange": "RM26-RM35/kg",
   "sameAs": [
     "https://www.instagram.com/freerange.farm/",
@@ -86,62 +86,30 @@
 
 <main>
 
-  <!-- VIDEO -->
-  <!-- Facebook embedded video player, pointed at the Reel
-       facebook.com/reel/2518658015324882/. To swap in a different video,
-       percent-encode its permalink and replace the href= value: ":" becomes
-       %3A and "/" becomes %2F. The video must be Public on the Page — any
-       narrower setting embeds as an empty box with no error message.
-
-       Sized 16:9: this Reel is landscape, confirmed by the owner. Don't
-       assume the ratio from the Reel format — check the video. The
-       width/height here must stay in step with .video__frame's max-width
-       and aspect-ratio in style.css. -->
-  <section class="video" id="video">
+  <!-- NAMING -->
+  <!-- Explains the brand name and, more importantly, what the bird actually is.
+       The site never stated the breed anywhere before this. -->
+  <section class="naming" id="naming">
     <div class="wrap">
-      <div class="video__frame">
-        <!-- Click to load. The iframe is built by js/main.js on click, so
-             Facebook is contacted only when someone actually chooses to watch.
-             data-video-src carries the same plugin URL the iframe used to
-             have; keep its width/height in step with .video__frame. -->
-        <button class="video__facade" type="button"
-                data-video-src="https://www.facebook.com/plugins/video.php?href=https%3A%2F%2Fwww.facebook.com%2Freel%2F2518658015324882%2F&amp;show_text=false&amp;width=760&amp;height=428&amp;t=0"
-                data-video-title="A short video tour of Free Range Farm in Kampar, Perak">
-          <img class="video__poster" src="assets/farm-sm.webp" alt="" width="896" height="504" loading="lazy">
-          <span class="video__play" aria-hidden="true"></span>
-          <span class="video__label">
-            Play the farm video
-            <span class="video__note">Loads from Facebook, which may set cookies</span>
-          </span>
-        </button>
-      </div>
-    </div>
-  </section>
+      <h1 class="section-title">Chicken Farm Malaysia</h1>
+      <h2 class="naming__sub">Why Free Range Farm?</h2>
 
-  <!-- GALLERY -->
-  <section class="gallery" id="gallery">
-    <div class="wrap">
-      <p class="kicker">In the field</p>
-      <h1 class="section-title">Life on a Free Range Chicken Farm</h1>
+      <p class="naming__lede">
+        Not one of our birds is kept in a cage. That is the whole of it &mdash; cage-free from
+        the first day to the last, with the run of a house and the open ground beyond it.
+        Free range is the English for keeping them that way, and it is where the farm
+        takes its name.
+      </p>
 
-      <div class="plate-grid">
-        <figure class="plate">
-          <img src="assets/roam-free.webp" alt="A free range hen roaming and foraging on open ground at the farm in Kampar" width="1100" height="1556" fetchpriority="high">
-          <figcaption>
-            <h2 class="plate__title">Foraging for Better Nutrition</h2>
-            <p class="plate__desc">Our free range chickens have access to the outdoors and hence are able to forage naturally on insects, seeds, and plants. Studies have shown that combined with increased activity, free-range chickens generally have higher levels of omega-3 fatty acids, which helps support heart health, reduce inflammation, and benefit brain function, compared to conventionally raised chickens. Also due to their active movement, free-range chicken breasts generally have significantly less saturated fat and hence are more tender and healthier.</p>
-          </figcaption>
-        </figure>
+      <!-- Inside .wrap, so it sits in the content column with the page gutter
+           down either side rather than running edge to edge.
+           The file is the full 5712x2824 original, by request — 61 MB of
+           decode RAM, which is the cost of not resizing it. -->
+      <figure class="naming__band">
+        <img src="assets/egg.webp" alt="Rows of hatching eggs in the incubator trays at the farm"
+             width="5712" height="2824" decoding="async">
+      </figure>
 
-        <figure class="plate">
-          <img src="assets/slow-grow.webp" alt="Chickens grown slowly over more than eighty days on the farm" width="1100" height="1556" loading="lazy">
-          <figcaption>
-            <h2 class="plate__title">Slow-Grown for Premium Texture</h2>
-            <p class="plate__desc">In our farm, we practice a slow-growth system in raising our chickens. All our chickens are raised for more than 80 days! By allowing our chickens to grow naturally according to their biological needs, in contrast to current commercial fast-growing broilers, our chickens have better biological integrity and stronger immune systems. This allows us to refrain from the usage of antibiotics on our chickens. Also, because of this longer growing time, our chickens have finer breast fibers, which results in premium firm and juicy meat!</p>
-          </figcaption>
-        </figure>
-
-      </div>
     </div>
   </section>
 
@@ -194,6 +162,79 @@
       </div>
 
       <a class="link-more" href="products.html">See the cuts we sell &rarr;</a>
+    </div>
+  </section>
+
+  <!-- VIDEO -->
+  <!-- Facebook embedded video player, pointed at the Reel
+       facebook.com/reel/2518658015324882/. To swap in a different video,
+       percent-encode its permalink and replace the href= value: ":" becomes
+       %3A and "/" becomes %2F. The video must be Public on the Page — any
+       narrower setting embeds as an empty box with no error message.
+
+       Sized 16:9: this Reel is landscape, confirmed by the owner. Don't
+       assume the ratio from the Reel format — check the video. The
+       width/height here must stay in step with .video__frame's max-width
+       and aspect-ratio in style.css. -->
+  <section class="video" id="video">
+    <div class="wrap">
+      <!-- Still an <h2> rather than a <p>: it is the only thing naming this
+           section, and a section with no heading leaves a hole in the page
+           outline. It just doesn't look like a heading — .video__side sets it
+           on its side beside the picture. -->
+      <div class="video__layout">
+        <h2 class="video__side">Farm at Kampar</h2>
+
+        <!-- The stamp mount. It owns the width — .video__frame sits inside it
+             at full width and keeps only the 16:9 ratio. -->
+        <div class="video__stamp">
+          <div class="video__frame">
+            <!-- Click to load. The iframe is built by js/main.js on click, so
+                 Facebook is contacted only when someone actually chooses to watch.
+                 data-video-src carries the same plugin URL the iframe used to
+                 have; keep its width/height in step with .video__frame. -->
+            <button class="video__facade" type="button"
+                    data-video-src="https://www.facebook.com/plugins/video.php?href=https%3A%2F%2Fwww.facebook.com%2Freel%2F2518658015324882%2F&amp;show_text=false&amp;width=560&amp;height=315&amp;t=0"
+                    data-video-title="A short video tour of Free Range Farm in Kampar, Perak">
+              <img class="video__poster" src="assets/farm-sm.webp" alt="" width="896" height="504" loading="lazy">
+              <span class="video__play" aria-hidden="true"></span>
+              <span class="video__label">
+                Play the farm video
+                <span class="video__note">Loads from Facebook, which may set cookies</span>
+              </span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <p class="video__caption">Nothing loads from Facebook until you press play.</p>
+    </div>
+  </section>
+
+  <!-- GALLERY -->
+  <section class="gallery" id="gallery">
+    <div class="wrap">
+      <p class="kicker">In the field</p>
+      <h2 class="section-title">Life on a Free Range Chicken Farm</h2>
+
+      <div class="plate-grid">
+        <figure class="plate">
+          <img src="assets/roam-free.webp" alt="A free range hen roaming and foraging on open ground at the farm in Kampar" width="1100" height="1556" fetchpriority="high">
+          <figcaption>
+            <h3 class="plate__title">Foraging for Better Nutrition</h3>
+            <p class="plate__desc">Our free range chickens have access to the outdoors and hence are able to forage naturally on insects, seeds, and plants. Studies have shown that combined with increased activity, free range chickens generally have higher levels of omega-3 fatty acids, which helps support heart health, reduce inflammation, and benefit brain function, compared to conventionally raised chickens. Also due to their active movement, free range chicken breasts generally have significantly less saturated fat and hence are more tender and healthier.</p>
+          </figcaption>
+        </figure>
+
+        <figure class="plate">
+          <img src="assets/slow-grow.webp" alt="Chickens grown slowly over more than eighty days on the farm" width="1100" height="1556" loading="lazy">
+          <figcaption>
+            <h3 class="plate__title">Slow-Grown for Premium Texture</h3>
+            <p class="plate__desc">In our farm, we practice a slow-growth system in raising our chickens. All our chickens are raised for more than 80 days! By allowing our chickens to grow naturally according to their biological needs, in contrast to current commercial fast-growing broilers, our chickens have better biological integrity and stronger immune systems. This allows us to refrain from the usage of antibiotics on our chickens. Also, because of this longer growing time, our chickens have finer breast fibers, which results in premium firm and juicy meat!</p>
+          </figcaption>
+        </figure>
+
+      </div>
     </div>
   </section>
 
