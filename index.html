@@ -4,15 +4,15 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="color-scheme" content="only light">
-<title>Free Range Farm | Free Range &amp; Capon Chicken, Kampar Perak</title>
-<meta name="description" content="Free Range Farm rears free range and capon chicken in Kampar, Perak — slow-grown with room to roam and forage, vacuum-packed and delivered fresh across the Klang area.">
+<title>Free Range Farm | Free Range Chicken &amp; Capon, Kampar Perak</title>
+<meta name="description" content="Free range chicken and capon reared in Kampar, Perak — slow-grown with room to roam and delivered across the Klang area.">
 <link rel="canonical" href="https://free-range-farm.com/">
 
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://free-range-farm.com/">
 <meta property="og:site_name" content="Free Range Farm">
 <meta property="og:title" content="Free Range Farm">
-<meta property="og:description" content="Free Range Farm — premium free-range and capon chicken farmed in Kampar, delivered fresh within the Klang area.">
+<meta property="og:description" content="Free range chicken and capon, reared cage-free in Kampar, Perak and delivered across the Klang area.">
 <meta property="og:image" content="https://free-range-farm.com/assets/OGtag.png">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
@@ -20,7 +20,7 @@
 
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="Free Range Farm">
-<meta name="twitter:description" content="Free Range Farm — premium free-range and capon chicken farmed in Kampar, delivered fresh within the Klang area.">
+<meta name="twitter:description" content="Free range chicken and capon, reared cage-free in Kampar, Perak and delivered across the Klang area.">
 <meta name="twitter:image" content="https://free-range-farm.com/assets/OGtag.png">
 
 <link rel="icon" type="image/x-icon" href="assets/globalicon.ico">
@@ -37,7 +37,7 @@
   "url": "https://free-range-farm.com/",
   "logo": "https://free-range-farm.com/assets/brownlogo.png",
   "image": "https://free-range-farm.com/assets/OGtag.png",
-  "description": "Free Range Farm — premium free-range and capon chicken farmed in Kampar, delivered fresh within the Klang area.",
+  "description": "Free range chicken and capon, reared cage-free in Kampar, Perak and delivered across the Klang area.",
   "priceRange": "RM26-RM35/kg",
   "sameAs": [
     "https://www.instagram.com/freerange.farm/",
@@ -90,7 +90,8 @@
     <img class="intro__scene" src="assets/promise-bg.webp" alt="" aria-hidden="true"
          width="1820" height="1582" fetchpriority="high">
     <div class="wrap intro__stack">
-      <h1 class="intro__title">Free Range Farm</h1>
+      <p class="kicker">Free Range Farm</p>
+      <h1 class="intro__title">Free Range Chicken</h1>
       <p class="intro__tagline">
         Every chicken roams freely across open pastures, every day.
       </p>
@@ -118,7 +119,7 @@
         <p class="kicker">What we sell</p>
         <h2 class="offer__title">Free Range Chicken</h2>
         <p class="offer__text">
-          Taste the Free-Range Difference · Ready to Cook · Maximum Juiciness
+          Taste the Free Range Difference · Ready to Cook · Maximum Juiciness
         </p>
         <a class="link-more" href="products.html">See sizes and cuts &rarr;</a>
       </div>
@@ -169,59 +170,24 @@
     </div>
   </section>
 
-  <!-- JOURNAL -->
-  <!-- Horizontal card rail of short notes about chicken, each linking to its
-       own page. One card for now, so nothing overflows and the row does not
-       scroll yet; it starts scrolling on its own as soon as a second is
-       added. To add one, copy the <li> block, point the link at a new
-       blogN.html and add that page to sitemap.xml. -->
-  <section class="journal" id="journal">
-    <div class="wrap">
-      <p class="kicker kicker--light">Good to know</p>
-      <h2 class="journal__heading">More About Chicken</h2>
-    </div>
-
-    <!-- No tabindex: every card now holds a link, so tabbing through them
-         scrolls the strip and the container needs no focus stop of its own.
-         If a card without a link is ever added, tabindex="0" has to come
-         back or keyboard users cannot scroll this at all.
-         data-lenis-prevent hands wheel and touch over the strip back to the
-         browser — Lenis otherwise swallows the sideways scroll. -->
-    <div class="journal__rail"
-         role="group"
-         aria-label="Notes about chicken — scroll sideways for more"
-         data-lenis-prevent>
-      <ul class="journal__track">
-
-        <li class="journal__card">
-          <p class="journal__tag">Rearing</p>
-          <h3 class="journal__title">
-            <a class="journal__link" href="blog1.html">Why slow growing matters</a>
-          </h3>
-          <p class="journal__text">
-            A commercial broiler is pushed to weight as fast as feed allows. Ours take
-            their time, and those extra weeks on their feet are what put the firmer,
-            chewier bite into the meat.
-          </p>
-          <p class="journal__more" aria-hidden="true">Read more &rarr;</p>
-        </li>
-
-      </ul>
-    </div>
-  </section>
+  <!-- JOURNAL (card rail) removed on 2026-10-19, to come back when blog2 is
+       written — a one-card scrolling row does not read as a row. The markup is
+       in git: `git show bfd1e7c:index.html` and lift the <section class="journal">
+       block. Its CSS is untouched in style.css under "Home — journal rail". -->
 
   <!-- PRIMER -->
   <section class="primer">
     <div class="wrap">
       <p class="primer__text" data-reveal>
         A bird free to go outdoors and forage for its own food, rather than living its
-        whole life inside a shed. Grown slowly rather than fast &mdash; which is what
-        gives the meat its firmer, juicier bite.
+        whole life inside a shed &mdash; what most Malaysians call ayam kampung, or
+        kampung chicken. Grown slowly rather than fast, which is what gives the meat
+        its firmer, juicier bite.
       </p>
 
       <h2 class="primer__heading" data-reveal>What is free range chicken?</h2>
 
-      <a class="link-more" href="our-farm.html" data-reveal>How we rear ours &rarr;</a>
+      <a class="link-more" href="blog1.html" data-reveal>What ayam kampung really means &rarr;</a>
     </div>
   </section>
 
