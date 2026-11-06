@@ -55,47 +55,48 @@
   }
 }
 </script>
+<!-- cms:faq-jsonld -->
 <script type="application/ld+json">
 {
   "@context": "https://schema.org",
   "@type": "FAQPage",
   "mainEntity": [
     {
-        "@type": "Question",
-        "name": "Do the chickens eat wild plants and insects entirely for survival?",
-        "acceptedAnswer": {
-            "@type": "Answer",
-            "text": "No. They eat a balanced diet of chicken feed alongside naturally foraged plants and insects."
-        }
+      "@type": "Question",
+      "name": "Do the chickens eat wild plants and insects entirely for survival?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "No. They eat a balanced diet of chicken feed alongside naturally foraged plants and insects."
+      }
     },
     {
-        "@type": "Question",
-        "name": "Why do we choose to use vacuum packaging with blast freezing in packing our meat?",
-        "acceptedAnswer": {
-            "@type": "Answer",
-            "text": "Vacuum packaging prevents oxidation, while blast freezing prevents freezer burn — together, they preserve the meat's juiciness and tenderness."
-        }
+      "@type": "Question",
+      "name": "Why do we choose to use vacuum packaging with blast freezing in packing our meat?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Vacuum packaging prevents oxidation, while blast freezing prevents freezer burn — together, they preserve the meat's juiciness and tenderness."
+      }
     },
     {
-        "@type": "Question",
-        "name": "What is the health benefit of eating a free range chicken?",
-        "acceptedAnswer": {
-            "@type": "Answer",
-            "text": "It supports heart health, reduces inflammation, and benefits brain function."
-        }
+      "@type": "Question",
+      "name": "What is the health benefit of eating a free range chicken?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "It may support heart health, reduce inflammation, and benefit brain function."
+      }
     },
     {
-        "@type": "Question",
-        "name": "Which areas do you deliver to?",
-        "acceptedAnswer": {
-            "@type": "Answer",
-            "text": "Our poultry is currently available exclusively to customers in the Klang area."
-        }
+      "@type": "Question",
+      "name": "Which areas do you deliver to?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Our poultry is currently available exclusively to customers in the Klang area."
+      }
     }
   ]
 }
 </script>
-<!-- Google Analytics is NOT loaded here any more. The tag used to run on
+<!-- /cms:faq-jsonld --><!-- Google Analytics is NOT loaded here any more. The tag used to run on
      page load, which set its cookies before anyone had been asked. It is now
      injected by js/main.js only after a visitor accepts in the cookie
      banner. The measurement ID lives in GA_ID at the top of that file. -->
@@ -133,17 +134,17 @@
 
 
       <div class="shop">
+<!-- cms:products -->
 
         <article class="card" id="free-range-whole">
           <div class="card__media">
-            <img src="assets/product1.webp" alt="Whole free range chicken, vacuum packed" loading="lazy">
+            <img src="https://cdn.sanity.io/images/uigdmztc/production/e536a4db0c388792f046a37e67dc636a959875a4-1792x2390.webp?w=1200&amp;fit=max&amp;auto=format" alt="Whole free range chicken, vacuum packed" width="1792" height="2390" loading="lazy">
           </div>
           <div class="card__body">
             <p class="card__eyebrow">Free Range Chicken</p>
             <h2 class="card__name">Whole Bird</h2>
             <p class="card__desc">
-              Dressed whole and vacuum-packed. Grown on a slow-growth system with the
-              run of the house and the open ground beyond it.
+              Dressed whole and vacuum-packed. Grown on a slow-growth system with the run of the house and the open ground beyond it.
             </p>
             <ul class="card__meta">
               <li>Vacuum-packed</li>
@@ -156,14 +157,13 @@
 
         <article class="card" id="free-range-cut">
           <div class="card__media">
-            <img src="assets/cut.webp" alt="Free range chicken portioned into parts, vacuum packed" loading="lazy">
+            <img src="https://cdn.sanity.io/images/uigdmztc/production/8fa84a3f5fba79573bd96087ca5932b5f2c8058c-1792x2390.webp?w=1200&amp;fit=max&amp;auto=format" alt="Free range chicken portioned into parts, vacuum packed" width="1792" height="2390" loading="lazy">
           </div>
           <div class="card__body">
             <p class="card__eyebrow">Free Range Chicken</p>
             <h2 class="card__name">Cut Into Parts</h2>
             <p class="card__desc">
-              The same whole bird, portioned into drumsticks, thighs, wings and breast,
-              then packed together and ready for the pan.
+              The same whole bird, portioned into drumsticks, thighs, wings and breast, then packed together and ready for the pan.
             </p>
             <ul class="card__meta">
               <li>Vacuum-packed</li>
@@ -176,15 +176,13 @@
 
         <article class="card" id="capon-chicken">
           <div class="card__media">
-            <img src="assets/product2.webp" alt="Whole capon chicken, vacuum packed and labelled" width="864" height="1080" loading="lazy">
+            <img src="https://cdn.sanity.io/images/uigdmztc/production/ba6a0e4f9199b5ecce706e904ed54458ac2e598d-864x1080.webp?w=1200&amp;fit=max&amp;auto=format" alt="Whole capon chicken, vacuum packed and labelled" width="864" height="1080" loading="lazy">
           </div>
           <div class="card__body">
             <p class="card__eyebrow">Capon Chicken</p>
             <h2 class="card__name">Whole Capon</h2>
             <p class="card__desc">
-              A male ayam kampung, castrated young and grown on slower and longer than
-              a table bird &mdash; remarkably tender, with a fuller flavour. Best roasted
-              intact.
+              A male ayam kampung, castrated young and grown on slower and longer than a table bird — remarkably tender, with a fuller flavour. Best roasted intact.
             </p>
             <ul class="card__meta">
               <li>Sold whole only</li>
@@ -195,7 +193,7 @@
           </div>
         </article>
 
-      </div>
+      <!-- /cms:products --></div>
     </div>
   </section>
 
@@ -236,6 +234,7 @@
       <h2 class="section-title section-title--center">Frequently Asked Questions</h2>
 
       <div class="faq__list">
+<!-- cms:faq -->
         <div class="faq__item">
           <button class="faq__toggle" type="button" aria-expanded="false" aria-controls="faq-answer-1">
             <span class="faq__question">Do the chickens eat wild plants and insects entirely for survival?</span>
@@ -265,7 +264,7 @@
           </button>
           <div class="faq__answer" id="faq-answer-3">
             <div class="faq__answer-inner">
-              <p>It supports heart health, reduces inflammation, and benefits brain function.</p>
+              <p>It may support heart health, reduce inflammation, and benefit brain function.</p>
             </div>
           </div>
         </div>
@@ -281,7 +280,7 @@
           </div>
         </div>
 
-      </div>
+      <!-- /cms:faq --></div>
     </div>
   </section>
 
@@ -298,7 +297,7 @@
           <img class="brown-logo" src="assets/brownlogo.png" alt="Free Range Farm">
           <img class="yellow-logo" src="assets/yellowlogo.png" alt="Free Range Farm">
         </a>
-        <p class="footer__company">Agri Agrobusiness<br>Sdn. Bhd.</p>
+        <p class="footer__company"><!-- cms:footer-company -->Agri Agrobusiness<br>Sdn. Bhd.<!-- /cms:footer-company --></p>
       </div>
 
       <nav class="footer__col" aria-label="Pages">
@@ -313,7 +312,7 @@
       </nav>
 
       <div class="footer__col footer__col--reach">
-        <p class="footer__label">Orders &amp; Enquiries</p>
+        <p class="footer__label">Orders &amp; Enquiries</p><!-- cms:footer-contact -->
         <p class="footer__contact">
           <span class="footer__contact-name">Mr. Chong</span>
           <span class="footer__contact-row">
@@ -328,13 +327,13 @@
           <li><a href="https://www.instagram.com/freerange.farm/" target="_blank" rel="noopener">Instagram</a></li>
           <li><a href="https://www.facebook.com/FreeRangeFarmOfficial" target="_blank" rel="noopener">Facebook</a></li>
         </ul>
-      </div>
+      <!-- /cms:footer-contact --></div>
 
     </div>
 
     <div class="footer__bar">
       <p class="footer__legal">&copy; 2026 Free Range Farm &middot; Agri Agrobusiness Sdn. Bhd.</p>
-      <p class="footer__address">53, Lorong Sanggul 1D, Bandar Puteri, 41200 Klang, Selangor, Malaysia</p>
+      <p class="footer__address"><!-- cms:footer-address -->53, Lorong Sanggul 1D, Bandar Puteri, 41200 Klang, Selangor, Malaysia<!-- /cms:footer-address --></p>
     </div>
 
   </div>
